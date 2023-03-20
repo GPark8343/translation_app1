@@ -224,6 +224,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _speechAvailable = false;
   String _lastWords = '';
   String _currentWords = '';
+  String _lastWords2 = '';
+  String _currentWords2 = '';
 
   @override
   void initState() {
@@ -232,7 +234,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void errorListener(SpeechRecognitionError error) {
+    setState(() {});
+    _startListening();
     debugPrint(error.errorMsg.toString());
+    // showDialog(
+    //     context: context,
+    //     builder: (_) {
+    //       return AlertDialog(
+    //         content: SingleChildScrollView(
+    //           child: Column(children: [Text('에러 발생 다시 시도해주세요.')]),
+    //         ),
+    //       );
+    //     });
   }
 
   void statusListener(String status) async {
@@ -241,6 +254,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _lastWords += " $_currentWords";
         _currentWords = "";
+        _lastWords2 += " $_currentWords2";
+        _currentWords2 = "";
         _speechEnabled = false;
       });
       await _startListening();
@@ -258,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _startListening() async {
     debugPrint("=================================================");
     await _stopListening();
-    await Future.delayed(const Duration(milliseconds: 50));
+    // await Future.delayed(const Duration(milliseconds: 5));
     await _speechToText.listen(
         localeId: _selectedLocaleId,
         onResult: _onSpeechResult,
@@ -288,6 +303,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var translatedText = await translateText(text, 'ko');
     setState(() {
       _currentWords = translatedText;
+      _currentWords2 = text;
     });
   }
 
@@ -320,33 +336,48 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('난 천재 박현도'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: const Text(
-                'Recognized words:',
-                style: TextStyle(fontSize: 20.0),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  _lastWords.isNotEmpty
-                      ? '$_lastWords $_currentWords'
-                      : _speechAvailable
-                          ? 'Tap the microphone to start listening...'
-                          : 'Speech not available',
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: const Text(
+                    '한국어:',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
                 ),
-              ),
+             
+                      Text(
+                        _lastWords.isNotEmpty
+                            ? '$_lastWords \n$_currentWords \n'
+                            : _speechAvailable
+                                ? 'Tap the microphone to start listening...'
+                                : 'Speech not available',
+                      ),
+                   
+             
+              
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: const Text(
+                          '영어:',
+                          style: TextStyle(fontSize: 20.0),
+                        ),
+                      ),
+                    
+                          Text(
+                            _lastWords2.isNotEmpty
+                                ? '$_lastWords2 \n$_currentWords2 \n'
+                                : _speechAvailable
+                                    ? 'Tap the microphone to start listening...'
+                                    : 'Speech not available',
+                        
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
