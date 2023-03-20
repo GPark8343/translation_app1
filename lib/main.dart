@@ -204,6 +204,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       home: MyHomePage(),
     );
@@ -234,9 +235,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void errorListener(SpeechRecognitionError error) {
-    setState(() {});
-    _startListening();
+    // _startListening();
     debugPrint(error.errorMsg.toString());
+    _speechToText.listen(
+        localeId: _selectedLocaleId,
+        onResult: _onSpeechResult,
+        cancelOnError: false,
+        partialResults: true,
+        listenMode: ListenMode.dictation);
     // showDialog(
     //     context: context,
     //     builder: (_) {
@@ -300,11 +306,50 @@ class _MyHomePageState extends State<MyHomePage> {
   /// the platform returns recognized words.
   void _onSpeechResult(SpeechRecognitionResult result) async {
     final text = result.recognizedWords;
-    var translatedText = await translateText(text, 'ko');
-    setState(() {
-      _currentWords = translatedText;
-      _currentWords2 = text;
-    });
+    if (text != '') {
+      var translatedText = await translate2(text, 'Korean');
+
+      setState(() {
+        _currentWords = translatedText;
+        _currentWords2 = text;
+      });
+    }
+  }
+
+  Future<String> translate2(String textToTranslate, String language) async {
+    final url = Uri.parse('https://api.openai.com/v1/completions');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization':
+            'Bearer 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',
+      },
+      body: jsonEncode({
+        "model": "text-davinci-003",
+        "prompt": "\"\"\"\ntranslate ${textToTranslate} to ${language}\"\"\"\n",
+        "temperature": 0,
+        "max_tokens": 4000,
+        "top_p": 0,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "stop": ["\"\"\""]
+      }),
+    );
+
+    final translations =
+        jsonDecode(utf8.decode(response.bodyBytes))['choices'] == null
+            ? [
+                {"text": ""}
+              ][0]['text']
+                .toString()
+            : jsonDecode(utf8.decode(response.bodyBytes))['choices'][0]['text']
+                .toString();
+    ;
+
+    print(response.body);
+
+    return translations;
   }
 
   Future<String> translateText(String text, String targetLanguage) async {
@@ -338,45 +383,55 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: const Text(
-                    '한국어:',
-                    style: TextStyle(fontSize: 20.0),
+          child: Column(
+            children: [
+              Container(
+                height: 70,
+                padding: const EdgeInsets.all(16),
+                child: const Text(
+                  '한국어:',
+                  style: TextStyle(fontSize: 20.0),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    child: Text(
+                      _lastWords.isNotEmpty
+                          ? '$_lastWords \n$_currentWords \n'
+                          : _speechAvailable
+                              ? 'Tap the microphone to start listening...'
+                              : 'Speech not available',
+                    ),
                   ),
                 ),
-             
-                      Text(
-                        _lastWords.isNotEmpty
-                            ? '$_lastWords \n$_currentWords \n'
-                            : _speechAvailable
-                                ? 'Tap the microphone to start listening...'
-                                : 'Speech not available',
-                      ),
-                   
-             
-              
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: const Text(
-                          '영어:',
-                          style: TextStyle(fontSize: 20.0),
-                        ),
-                      ),
-                    
-                          Text(
-                            _lastWords2.isNotEmpty
-                                ? '$_lastWords2 \n$_currentWords2 \n'
-                                : _speechAvailable
-                                    ? 'Tap the microphone to start listening...'
-                                    : 'Speech not available',
-                        
+              ),
+              Container(
+                height: 70,
+                padding: const EdgeInsets.all(16),
+                child: const Text(
+                  '영어:',
+                  style: TextStyle(fontSize: 20.0),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    child: Text(
+                      _lastWords2.isNotEmpty
+                          ? '$_lastWords2 \n$_currentWords2 \n'
+                          : _speechAvailable
+                              ? 'Tap the microphone to start listening...'
+                              : 'Speech not available',
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
