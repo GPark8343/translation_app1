@@ -32,42 +32,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Future<String> translate2(String textToTranslate, String language) async {
-  //   final url = Uri.parse('https://api.openai.com/v1/completions');
-  //   final response = await http.post(
-  //     url,
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization':
-  //           'Bearer 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',
-  //     },
-  //     body: jsonEncode({
-  //       "model": "text-davinci-002",
-  //       "prompt": "\"\"\"\ntranslate ${textToTranslate} to ${language}\"\"\"\n",
-  //       "temperature": 0,
-  //       "max_tokens": 4000,
-  //       "top_p": 0,
-  //       "frequency_penalty": 0.0,
-  //       "presence_penalty": 0.0,
-  //       "stop": ["\"\"\""]
-  //     }),
-  //   );
-
-  //   final translations =
-  //       jsonDecode(utf8.decode(response.bodyBytes))['choices'] == null
-  //           ? [
-  //               {"text": ""}
-  //             ][0]['text']
-  //               .toString()
-  //           : jsonDecode(utf8.decode(response.bodyBytes))['choices'][0]['text']
-  //               .toString();
-  //   ;
-
-  //   print(response.body);
-
-  //   return translations;
-  // }
-
   Future<String> translateText(String text, String targetLanguage) async {
     const apiKey = 'AIzaSyA770N6IzZxM50VrnnVXYn8HPqplf2VC9A';
 
@@ -123,13 +87,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _audioStream!);
 
     var responseText = '';
-    var translatedResponseText = '';//
+    var translatedResponseText = ''; //
 
     responseStream.listen((data) async {
       final currentText =
           data.results.map((e) => e.alternatives.first.transcript).join('\n');
 
-      final translatedCurrentText = await translateText(currentText, 'ko');//
+      final translatedCurrentText = await translateText(currentText, 'ko'); //
 
       if (data.results.first.isFinal) {
         responseText += '\n' + currentText;
@@ -142,7 +106,8 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         setState(() {
           text = responseText + '\n' + currentText;
-          translatedText = translatedResponseText + '\n' + translatedCurrentText;
+          translatedText =
+              translatedResponseText + '\n' + translatedCurrentText;
           recognizeFinished = true;
         });
       }
@@ -150,6 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         recognizing = false;
       });
+    }).onError((error) {
+      print(error);
     });
   }
 
@@ -164,18 +131,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   RecognitionConfig _getConfig() => RecognitionConfig(
       encoding: AudioEncoding.LINEAR16,
-      model: RecognitionModel.basic,
+      model: RecognitionModel.video,
       enableAutomaticPunctuation: true,
       sampleRateHertz: 16000,
       languageCode: 'en-US');
-
-  /// This is the callback that the SpeechToText plugin calls when
-  /// the platform returns recognized words.
-  // void _onSpeechResult(SpeechRecognitionResult result) {
-  //   setState(() {
-  //     _lastWords = result.recognizedWords;
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 70,
                 padding: const EdgeInsets.all(16),
                 child: const Text(
-                  '영어:',
+                  'English:',
                   style: TextStyle(fontSize: 20.0),
                 ),
               ),
