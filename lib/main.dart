@@ -8,9 +8,13 @@ import 'package:rxdart/rxdart.dart';
 import 'package:sound_stream/sound_stream.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:translation_app/provider/bottom_manage.dart';
 import 'dart:convert';
 
 import 'package:translation_app/provider/history_manage.dart';
+import 'package:translation_app/screen/history_detail_screen.dart';
+import 'package:translation_app/screen/repository_screen.dart';
+import 'package:translation_app/screen/translation_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +27,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       home: MyHomePage(),
+      routes: {
+        HistoryDetailSscreen.routeName: (ctx) => HistoryDetailSscreen(),
+      },
     );
   }
 }
@@ -35,112 +42,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<String> translateText(String text, String targetLanguage) async {
-    const apiKey = 'AIzaSyA770N6IzZxM50VrnnVXYn8HPqplf2VC9A';
-
-    final url = Uri.parse(
-        'https://translation.googleapis.com/language/translate/v2/' +
-            '?q=$text&target=$targetLanguage&key=$apiKey');
-    final response = await http.post(url);
-    if (response.statusCode == 200) {
-      final translatedText = jsonDecode(response.body)['data']['translations']
-          [0]['translatedText'];
-      return translatedText;
-    } else {
-      print(response.statusCode);
-      print(response.body);
-      throw Exception('Failed to translate text');
-    }
-  }
-
-  final RecorderStream _recorder = RecorderStream();
-  final ScrollController _scrollController1 = ScrollController();
-  final ScrollController _scrollController2 = ScrollController();
-
-  bool recognizing = false;
-  bool recognizeFinished = false;
-  String text = '';
-  String translatedText = '';
-  StreamSubscription<List<int>>? _audioStreamSubscription;
-  BehaviorSubject<List<int>>? _audioStream;
+  late List<Map<String, Object>> _pages; //
+  int _selectedPageIndex = 0;
 
   @override
   void initState() {
+    _pages = [
+      {'page': TranslationScreen(), 'title': 'translation'},
+      {'page': RepositoryScreen(), 'title': 'test'},
+    ];
+
     super.initState();
-
-    _recorder.initialize();
   }
 
-  void streamingRecognize() async {
-    _audioStream = BehaviorSubject<List<int>>();
-    _audioStreamSubscription = _recorder.audioStream.listen((event) {
-      _audioStream!.add(event);
-    });
-
-    await _recorder.start();
-
+  void _selectPage(int index) {
     setState(() {
-      recognizing = true;
-    });
-    final serviceAccount = ServiceAccount.fromString(
-        (await rootBundle.loadString('assets/test_service_account.json')));
-    final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
-    final config = _getConfig();
-
-    final responseStream = speechToText.streamingRecognize(
-        StreamingRecognitionConfig(config: config, interimResults: true),
-        _audioStream!);
-
-    var responseText = '';
-    var translatedResponseText = ''; //
-
-    responseStream.listen((data) async {
-      final currentText =
-          data.results.map((e) => e.alternatives.first.transcript).join('\n');
-
-      final translatedCurrentText = await translateText(currentText, 'ko'); //
-      _scrollController1.animateTo(_scrollController1.position.maxScrollExtent,
-          duration: Duration(milliseconds: 200), curve: Curves.easeInOut);
-      _scrollController2.animateTo(_scrollController2.position.maxScrollExtent,
-          duration: Duration(milliseconds: 200), curve: Curves.easeInOut);
-      if (data.results.first.isFinal) {
-        responseText += '\n' + currentText;
-        translatedResponseText += '\n' + translatedCurrentText;
-        setState(() {
-          text = responseText;
-          translatedText = translatedResponseText;
-          recognizeFinished = true;
-        });
-      } else {
-        setState(() {
-          text = responseText + '\n' + currentText;
-          translatedText =
-              translatedResponseText + '\n' + translatedCurrentText;
-          recognizeFinished = true;
-        });
-      }
-    }, onDone: () {
-      setState(() {
-        recognizing = false;
-      });
+      _selectedPageIndex = index;
     });
   }
-
-  void stopRecording() async {
-    await _recorder.stop();
-    await _audioStreamSubscription?.cancel();
-    await _audioStream?.close();
-    setState(() {
-      recognizing = false;
-    });
-  }
-
-  RecognitionConfig _getConfig() => RecognitionConfig(
-      encoding: AudioEncoding.LINEAR16,
-      model: RecognitionModel.video,
-      enableAutomaticPunctuation: true,
-      sampleRateHertz: 16000,
-      languageCode: 'en-US');
 
   @override
   Widget build(BuildContext context) {
@@ -149,80 +68,35 @@ class _MyHomePageState extends State<MyHomePage> {
           ChangeNotifierProvider.value(
             value: HistoryManage(),
           ),
+          // ChangeNotifierProvider.value(
+          //   value: BottomManage(),
+          // ),
         ],
         child: Scaffold(
-          appBar: AppBar(),
-          body: SafeArea(
-            child: Center(
-              child: Column(
-                children: [
-                  Container(
-                    height: 70,
-                    padding: const EdgeInsets.all(16),
-                    child: const Text(
-                      textAlign: TextAlign.start,
-                      '한국어:',
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: _scrollController1,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        child: Text(translatedText),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 70,
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'English:',
-                          textAlign: TextAlign.start,
-                          style: TextStyle(fontSize: 20.0),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                                onPressed: () {
-                                  stopRecording();
-                                  Provider.of<HistoryManage>(context,
-                                          listen: false)
-                                      .addHistory(
-                                          'example', text, translatedText);
-                                },
-                                icon: Icon(Icons.save)),
-                            IconButton(
-                                onPressed: recognizing
-                                    ? stopRecording
-                                    : streamingRecognize,
-                                icon: Icon(
-                                    recognizing ? Icons.mic_off : Icons.mic))
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: _scrollController2,
-                      physics: AlwaysScrollableScrollPhysics(),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        child: Text(text),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          appBar: AppBar(
+              title: Text(
+            _selectedPageIndex == 0 ? '번역' : '기록 보관소',
+          )),
+          body: SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),
+          bottomNavigationBar: BottomNavigationBar(
+              selectedItemColor: Color(0xFF00B6F0),
+              onTap:
+                _selectPage,
+                    
+              backgroundColor: Color(0xFFF2F3F8),
+              unselectedItemColor: Colors.black,
+              currentIndex: _selectedPageIndex,
+              type: BottomNavigationBarType.fixed,
+              items: [
+                BottomNavigationBarItem(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    icon: Icon(Icons.home_outlined),
+                    label: '홈'),
+                BottomNavigationBarItem(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    icon: Icon(Icons.file_copy),
+                    label: '기록'),
+              ]),
         ));
   }
 }
