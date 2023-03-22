@@ -3,11 +3,14 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:google_speech/google_speech.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sound_stream/sound_stream.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:translation_app/provider/history_manage.dart';
 
 void main() {
   runApp(MyApp());
@@ -51,6 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   final RecorderStream _recorder = RecorderStream();
+  final ScrollController _scrollController1 = ScrollController();
+  final ScrollController _scrollController2 = ScrollController();
 
   bool recognizing = false;
   bool recognizeFinished = false;
@@ -94,7 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
           data.results.map((e) => e.alternatives.first.transcript).join('\n');
 
       final translatedCurrentText = await translateText(currentText, 'ko'); //
-
+      _scrollController1.animateTo(_scrollController1.position.maxScrollExtent,
+          duration: Duration(milliseconds: 200), curve: Curves.easeInOut);
+      _scrollController2.animateTo(_scrollController2.position.maxScrollExtent,
+          duration: Duration(milliseconds: 200), curve: Curves.easeInOut);
       if (data.results.first.isFinal) {
         responseText += '\n' + currentText;
         translatedResponseText += '\n' + translatedCurrentText;
@@ -115,8 +123,6 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         recognizing = false;
       });
-    }).onError((error) {
-      print(error);
     });
   }
 
@@ -138,54 +144,85 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            children: [
-              Container(
-                height: 70,
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  '한국어:',
-                  style: TextStyle(fontSize: 20.0),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(translatedText),
-                  ),
-                ),
-              ),
-              Container(
-                height: 70,
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  'English:',
-                  style: TextStyle(fontSize: 20.0),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(text),
-                  ),
-                ),
-              ),
-            ],
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(
+            value: HistoryManage(),
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Listen',
-        onPressed: recognizing ? stopRecording : streamingRecognize,
-        child: Icon(recognizing ? Icons.mic_off : Icons.mic),
-      ),
-    );
+        ],
+        child: Scaffold(
+          appBar: AppBar(),
+          body: SafeArea(
+            child: Center(
+              child: Column(
+                children: [
+                  Container(
+                    height: 70,
+                    padding: const EdgeInsets.all(16),
+                    child: const Text(
+                      textAlign: TextAlign.start,
+                      '한국어:',
+                      style: TextStyle(fontSize: 20.0),
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController1,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Text(translatedText),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 70,
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'English:',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(fontSize: 20.0),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  stopRecording();
+                                  Provider.of<HistoryManage>(context,
+                                          listen: false)
+                                      .addHistory(
+                                          'example', text, translatedText);
+                                },
+                                icon: Icon(Icons.save)),
+                            IconButton(
+                                onPressed: recognizing
+                                    ? stopRecording
+                                    : streamingRecognize,
+                                icon: Icon(
+                                    recognizing ? Icons.mic_off : Icons.mic))
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController2,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Text(text),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
   }
 }
