@@ -23,7 +23,7 @@ class TranslationScreen extends StatefulWidget {
 
 class _TranslationScreenState extends State<TranslationScreen> {
   Future<String> translateText(String text, String targetLanguage) async {
-    const apiKey = 'AIzaSyA770N6IzZxM50VrnnVXYn8HPqplf2VC9A';
+    const apiKey = 'AIzaSyC7J7y9M009gpDOq4A5qIxn1b9M-mdPiSU';
 
     final url = Uri.parse(
         'https://translation.googleapis.com/language/translate/v2/' +
