@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:translation_app/provider/history_manage.dart';
 
-class HistoryDetailSscreen extends StatelessWidget {
+class HistoryDetailSscreen extends StatefulWidget {
   static const routeName = '/history-detail';
-  const HistoryDetailSscreen({super.key});
+
+  @override
+  State<HistoryDetailSscreen> createState() => _HistoryDetailSscreenState();
+}
+
+class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
+  final _titleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +26,133 @@ class HistoryDetailSscreen extends StatelessWidget {
         as Map)['history_createdAt'];
     DateTime dateTime = DateTime.parse(historyCreatedAt);
     return Scaffold(
-        appBar: AppBar(title: Text('${historyTitle}')),
+        appBar: AppBar(
+          title: Text('${historyTitle}'),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (ctx1) {
+                        return AlertDialog(
+                          title: const Text('진짜로 지우시겠습니까?'),
+                          actions: <Widget>[
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('취소하기'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(),
+                              onPressed: () async {
+                                Provider.of<HistoryManage>(context,
+                                        listen: false)
+                                    .deleteHistories(historyId);
+                                await Provider.of<HistoryManage>(context,
+                                        listen: false)
+                                    .fetchAndSetHistories();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return AlertDialog(
+                                        content: SingleChildScrollView(
+                                          child: Text('삭제가 완료되었습니다.'),
+                                        ),
+                                      );
+                                    });
+                              },
+                              child: const Text('삭제하기'),
+                            ),
+                          ],
+                        );
+                      });
+                },
+                icon: Icon(Icons.delete)),
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (ctx2) {
+                        return SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 100.0),
+                            child: AlertDialog(
+                              content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SingleChildScrollView(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(
+                                          MediaQuery.of(context).size.width /
+                                              360 *
+                                              10.0),
+                                      child: Column(
+                                        children: [
+                                          Text('제목 수정'),
+                                          TextFormField(
+                                            controller: _titleController,
+                                            decoration: InputDecoration(
+                                                hintText: historyTitle),
+                                          ),
+                                          SizedBox(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                360 *
+                                                10,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              actions: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: Colors.black),
+                                  onPressed: () async {
+                                    if (_titleController.text.isEmpty) {
+                                      // 빈 스토리는 작성 못하게 해야 함
+                                      return;
+                                    }
+                                    var findedHistory =
+                                        await Provider.of<HistoryManage>(
+                                                context,
+                                                listen: false)
+                                            .findById(historyId);
+                                    await Provider.of<HistoryManage>(context,
+                                            listen: false)
+                                        .changeTitle(findedHistory,
+                                            _titleController.text);
+                                    await Provider.of<HistoryManage>(context,
+                                            listen: false)
+                                        .fetchAndSetHistories();
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
+                                    setState(() {});
+                                  },
+                                  icon: Icon(Icons.check),
+                                  label: Text('제목 바꾸기'),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                },
+                icon: Icon(Icons.edit)),
+          ],
+        ),
         body: SafeArea(
             child: Center(
           child: Column(

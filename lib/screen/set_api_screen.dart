@@ -4,7 +4,8 @@ import 'package:translation_app/provider/api_manage.dart';
 
 class SetApiScreen extends StatefulWidget {
   static const routeName = '/set-api';
-  const SetApiScreen({super.key});
+  final Function? selectPage;
+  SetApiScreen({this.selectPage});
 
   @override
   State<SetApiScreen> createState() => _SetApiScreenState();
@@ -50,20 +51,23 @@ class _SetApiScreenState extends State<SetApiScreen> {
                   keyboardType: TextInputType.multiline,
                   focusNode: _jsonFocusNode,
                 ),
-                IconButton(
+                SizedBox(height: 100,),
+                TextButton(
                     onPressed: () async {
                       if (_keyController.text.isEmpty ||
                           _jsonController.text.isEmpty) {
                         // 빈 필드는 작성 못하게 해야 함
                         return;
                       }
-                      Navigator.of(context).pop();
                       await Provider.of<ApiManage>(context, listen: false)
                           .addApi(_keyController.text, _jsonController.text);
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      widget.selectPage!(1);
                       await Provider.of<ApiManage>(context, listen: false)
                           .fetchAndSetApi();
                     },
-                    icon: Icon(Icons.check))
+                    child: Text('입력 완료'))
               ],
             ),
           ),

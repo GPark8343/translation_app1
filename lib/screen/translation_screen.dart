@@ -16,7 +16,8 @@ import 'dart:convert';
 import 'package:translation_app/provider/history_manage.dart';
 
 class TranslationScreen extends StatefulWidget {
-  const TranslationScreen({super.key});
+  final Function? selectPage;
+  TranslationScreen({this.selectPage});
 
   @override
   State<TranslationScreen> createState() => _TranslationScreenState();
@@ -29,6 +30,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
   bool recognizing = false;
   bool recognizeFinished = false;
+  bool autoScroll = true;
   String text = '';
   String translatedText = '';
   StreamSubscription<List<int>>? _audioStreamSubscription;
@@ -47,13 +49,11 @@ class _TranslationScreenState extends State<TranslationScreen> {
         ? ''
         : Provider.of<ApiManage>(context, listen: false).items[0].json;
 
-  
-
-    //  String apiKey = 'AIzaSyC7J7y9M009gpDOq4A5qIxn1b9M-mdPiSU';
     Future<String> translateText(String text, String targetLanguage) async {
-        String apiKey = Provider.of<ApiManage>(context, listen: false).items.isEmpty
-        ? ''
-        : Provider.of<ApiManage>(context, listen: false).items[0].key;
+      String apiKey =
+          Provider.of<ApiManage>(context, listen: false).items.isEmpty
+              ? ''
+              : Provider.of<ApiManage>(context, listen: false).items[0].key;
       final url = Uri.parse(
           'https://translation.googleapis.com/language/translate/v2/' +
               '?q=$text&target=$targetLanguage&key=$apiKey');
@@ -83,7 +83,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
           recognizing = true;
         });
       }
-     
 
       RecognitionConfig _getConfig() => RecognitionConfig(
           encoding: AudioEncoding.LINEAR16,
@@ -91,9 +90,10 @@ class _TranslationScreenState extends State<TranslationScreen> {
           enableAutomaticPunctuation: true,
           sampleRateHertz: 16000,
           languageCode: 'en-US');
-String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
-        ? ''
-        : Provider.of<ApiManage>(context, listen: false).items[0].json;
+      String json2 =
+          Provider.of<ApiManage>(context, listen: false).items.isEmpty
+              ? ''
+              : Provider.of<ApiManage>(context, listen: false).items[0].json;
       final serviceAccount = ServiceAccount.fromString(json2);
       final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
       final config = _getConfig();
@@ -110,13 +110,13 @@ String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
             data.results.map((e) => e.alternatives.first.transcript).join('\n');
 
         final translatedCurrentText = await translateText(currentText, 'ko'); //
-        if (_scrollController1.hasClients) {
+        if (_scrollController1.hasClients && autoScroll) {
           _scrollController1.animateTo(
               _scrollController1.position.maxScrollExtent,
               duration: Duration(milliseconds: 200),
               curve: Curves.easeInOut);
         }
-        if (_scrollController2.hasClients) {
+        if (_scrollController2.hasClients && autoScroll) {
           _scrollController2.animateTo(
               _scrollController2.position.maxScrollExtent,
               duration: Duration(milliseconds: 200),
@@ -203,6 +203,21 @@ String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                                backgroundColor: Colors.lightBlue[100]),
+                            onPressed: () {
+                              setState(() {
+                                autoScroll = !autoScroll;
+                              });
+                            },
+                            child: Text(
+                              autoScroll
+                                  ? 'auto-scroll-mode'
+                                  : 'non-auto-scroll-mode',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ),
                           IconButton(
                               onPressed: () {
                                 showDialog(
@@ -224,7 +239,8 @@ String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
                                     : Provider.of<HistoryManage>(context,
                                             listen: false)
                                         .addHistory(
-                                            'example', text, translatedText);
+                                            'record', text, translatedText);
+                                text == '' ? null : widget.selectPage!(1);
                               },
                               icon: Icon(Icons.save)),
                           IconButton(
@@ -233,6 +249,9 @@ String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
                                       .items
                                       .isEmpty
                                   ? () {
+                                      Provider.of<ApiManage>(context,
+                                              listen: false)
+                                          .fetchAndSetApi();
                                       showDialog(
                                           context: context,
                                           builder: (_) {
@@ -246,36 +265,55 @@ String json2 = Provider.of<ApiManage>(context, listen: false).items.isEmpty
                                           });
                                     }
                                   : (recognizing
-                                      ? () {
-                                          stopRecording();
-                                          showDialog(
-                                              context: context,
-                                              builder: (_) {
-                                                return AlertDialog(
-                                                  content:
-                                                      SingleChildScrollView(
-                                                    child: Column(children: [
-                                                      (Text('녹음이 정지되었습니다.'))
-                                                    ]),
-                                                  ),
-                                                );
-                                              });
-                                        }
-                                      : () {
-                                          streamingRecognize();
-                                          showDialog(
-                                              context: context,
-                                              builder: (_) {
-                                                return AlertDialog(
-                                                  content:
-                                                      SingleChildScrollView(
-                                                    child: Column(children: [
-                                                      (Text('녹음 중.'))
-                                                    ]),
-                                                  ),
-                                                );
-                                              });
-                                        }),
+                                      ? Provider.of<ApiManage>(context,
+                                                  listen: false)
+                                              .items
+                                              .isEmpty
+                                          ? null
+                                          : () {
+                                              Provider.of<ApiManage>(context,
+                                                      listen: false)
+                                                  .fetchAndSetApi();
+
+                                              stopRecording();
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (_) {
+                                                    return AlertDialog(
+                                                      content:
+                                                          SingleChildScrollView(
+                                                        child:
+                                                            Column(children: [
+                                                          (Text('녹음이 정지되었습니다.'))
+                                                        ]),
+                                                      ),
+                                                    );
+                                                  });
+                                            }
+                                      : Provider.of<ApiManage>(context,
+                                                  listen: false)
+                                              .items
+                                              .isEmpty
+                                          ? null
+                                          : () {
+                                              Provider.of<ApiManage>(context,
+                                                      listen: false)
+                                                  .fetchAndSetApi();
+                                              streamingRecognize();
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (_) {
+                                                    return AlertDialog(
+                                                      content:
+                                                          SingleChildScrollView(
+                                                        child: Column(
+                                                            children: [
+                                                              (Text('녹음 중.'))
+                                                            ]),
+                                                      ),
+                                                    );
+                                                  });
+                                            }),
                               icon:
                                   Icon(recognizing ? Icons.mic_off : Icons.mic))
                         ],

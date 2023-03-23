@@ -17,4 +17,6 @@
 3. 빌드 경로는  [Project Forder]/build/app/outputs/apk/release/app-release.apk 입니다. 해당 파일을 안드로이드 폰에 옮겨서 설치하면 완료!
 
 
+만들고 나서 바로 녹음하면 또 설정하라네
 
+지우고 나서 녹음하면 ㅈ됨

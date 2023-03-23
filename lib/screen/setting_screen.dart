@@ -5,7 +5,8 @@ import 'package:translation_app/screen/set_api_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   static const routeName = '/setting';
-
+  final Function? selectPage;
+  SettingScreen({this.selectPage});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +18,7 @@ class SettingScreen extends StatelessWidget {
                     return PageRouteBuilder(
                       settings: RouteSettings(arguments: {}),
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          SetApiScreen(),
+                          SetApiScreen(selectPage: selectPage),
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {
                         const begin = Offset(0.0, 1.0);
@@ -107,6 +108,7 @@ class SettingScreen extends StatelessWidget {
                                                         listen: false)
                                                     .fetchAndSetApi();
                                                 Navigator.of(context).pop();
+                                                selectPage!(1);
 
                                                 showDialog(
                                                     context: context,

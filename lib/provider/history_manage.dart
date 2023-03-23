@@ -24,8 +24,8 @@ class HistoryManage extends ChangeNotifier {
             ));
   }
 
-  Future<void> addHistory(String pickedTitle, 
-      String pickedtext,String pickedTranslatedText) async {
+  Future<void> addHistory(String pickedTitle, String pickedtext,
+      String pickedTranslatedText) async {
     final newHistory = History(
       id: Uuid().v1(),
       title: pickedTitle,
@@ -51,12 +51,17 @@ class HistoryManage extends ChangeNotifier {
               id: item['id'],
               title: item['title'],
               text: item['text'],
-          translatedText: item['translatedText'],
+              translatedText: item['translatedText'],
               createdAt: item['created_at'],
             ))
         .toList();
 
     notifyListeners();
+  }
+
+  changeTitle(History findedHistory, String pickedTitle) {
+    History updatedHistory = findedHistory.copyWith(title: pickedTitle);
+    DBHelper.updateHistory('history', updatedHistory);
   }
 
   Future<void> deleteHistories(String id) async {
