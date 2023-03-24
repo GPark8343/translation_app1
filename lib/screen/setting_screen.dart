@@ -10,7 +10,7 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(actions: [
+      appBar: AppBar(title: Text('Api 등록'), actions: [
         Provider.of<ApiManage>(context, listen: false).items.isEmpty
             ? TextButton(
                 onPressed: () {
@@ -146,39 +146,7 @@ class SettingScreen extends StatelessWidget {
                                               12,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                onTap: () {
-                                  // Route _createRoute() {
-                                  //   return PageRouteBuilder(
-                                  //     settings: RouteSettings(arguments: {
-                                  //       'api_id': greatApis.items[0].id,
-                                  //       'api_key': greatApis.items[0].key,
-                                  //       'api_json': greatApis.items[0].json,
-                                  //       'api_createdAt':
-                                  //           greatApis.items[0].createdAt,
-                                  //     }),
-                                  //     pageBuilder: (context, animation,
-                                  //             secondaryAnimation) =>
-                                  //         ApiDetailSscreen(),
-                                  //     transitionsBuilder: (context, animation,
-                                  //         secondaryAnimation, child) {
-                                  //       const begin = Offset(0.0, 1.0);
-                                  //       const end = Offset.zero;
-                                  //       const curve = Curves.ease;
-
-                                  //       var tween = Tween(
-                                  //               begin: begin, end: end)
-                                  //           .chain(CurveTween(curve: curve));
-
-                                  //       return SlideTransition(
-                                  //         position: animation.drive(tween),
-                                  //         child: child,
-                                  //       );
-                                  //     },
-                                  //   );
-                                  // }
-
-                                  // Navigator.of(context).push(_createRoute());
-                                },
+                                onTap: () {},
                               ),
                             );
                     });

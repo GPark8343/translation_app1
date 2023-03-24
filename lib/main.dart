@@ -18,8 +18,15 @@ import 'package:translation_app/screen/repository_screen.dart';
 import 'package:translation_app/screen/set_api_screen.dart';
 import 'package:translation_app/screen/setting_screen.dart';
 import 'package:translation_app/screen/translation_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
+  await initializeDateFormatting();
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(MyApp());
 }
 
@@ -58,7 +65,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late List<Map<String, Object>> _pages; //
   int _selectedPageIndex = 0;
-
+  bool _isVisible = true; // BottomNavigationBar를 숨기는 상태 변수
   @override
   void initState() {
     _pages = [
@@ -66,6 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
         'page': TranslationScreen(selectPage: (int index) {
           setState(() {
             _selectedPageIndex = index;
+          });
+        }, changeVisible: (bool isVisible) {
+          setState(() {
+            _isVisible = isVisible;
           });
         }),
         'title': 'translation'
@@ -79,6 +90,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _selectPage(int index) {
     setState(() {
       _selectedPageIndex = index;
+    });
+  }
+
+  void _changeVisible(bool isVisible) {
+    setState(() {
+      _isVisible = isVisible;
     });
   }
 
@@ -127,23 +144,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   _selectedPageIndex == 0 ? '번역' : '기록 보관소',
                 )),
             body: SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),
-            bottomNavigationBar: BottomNavigationBar(
-                selectedItemColor: Color(0xFF00B6F0),
-                onTap: _selectPage,
-                backgroundColor: Color(0xFFF2F3F8),
-                unselectedItemColor: Colors.black,
-                currentIndex: _selectedPageIndex,
-                type: BottomNavigationBarType.fixed,
-                items: [
-                  BottomNavigationBarItem(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      icon: Icon(Icons.home_outlined),
-                      label: '홈'),
-                  BottomNavigationBarItem(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      icon: Icon(Icons.file_copy),
-                      label: '기록'),
-                ]),
+            bottomNavigationBar: Visibility(
+              visible: _isVisible,
+              child: BottomNavigationBar(
+                  selectedItemColor: Color(0xFF00B6F0),
+                  onTap: _selectPage,
+                  backgroundColor: Color(0xFFF2F3F8),
+                  unselectedItemColor: Colors.black,
+                  currentIndex: _selectedPageIndex,
+                  type: BottomNavigationBarType.fixed,
+                  items: [
+                    BottomNavigationBarItem(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        icon: Icon(Icons.home_outlined),
+                        label: '홈'),
+                    BottomNavigationBarItem(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        icon: Icon(Icons.file_copy),
+                        label: '기록'),
+                  ]),
+            ),
           );
         });
   }

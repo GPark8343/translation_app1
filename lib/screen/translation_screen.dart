@@ -17,7 +17,9 @@ import 'package:translation_app/provider/history_manage.dart';
 
 class TranslationScreen extends StatefulWidget {
   final Function? selectPage;
-  TranslationScreen({this.selectPage});
+  final Function? changeVisible;
+
+  TranslationScreen({this.selectPage, this.changeVisible});
 
   @override
   State<TranslationScreen> createState() => _TranslationScreenState();
@@ -69,7 +71,38 @@ class _TranslationScreenState extends State<TranslationScreen> {
       }
     }
 
-    void streamingRecognize() async {
+    stopRecording() async {
+      widget.changeVisible!(true);
+      await _recorder.stop();
+      await _audioStreamSubscription?.cancel();
+      await _audioStream?.close();
+      if (this.mounted) {
+        setState(() {
+          recognizing = false;
+        });
+      }
+    }
+
+    streamingRecognize() async {
+      widget.changeVisible!(false);
+      Future.delayed(const Duration(seconds: 300), () async {
+        await showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: Column(children: [
+                    (Text('최대 녹음 가능 시간 300초를 초과하여 녹음이 정지되었습니다.'))
+                  ]),
+                ),
+              );
+            });
+        text == ''
+            ? null
+            : await Provider.of<HistoryManage>(context, listen: false)
+                .addHistory('record', text, translatedText);
+        await stopRecording();
+      });
       await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
       //  Provider.of<BottomManage>(context, listen: false).changeFalse();
       _audioStream = BehaviorSubject<List<int>>();
@@ -152,18 +185,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
       });
     }
 
-    void stopRecording() async {
-      // Provider.of<BottomManage>(context, listen: false).changeTrue();
-      await _recorder.stop();
-      await _audioStreamSubscription?.cancel();
-      await _audioStream?.close();
-      if (this.mounted) {
-        setState(() {
-          recognizing = false;
-        });
-      }
-    }
-
     return FutureBuilder(
         future: Provider.of<ApiManage>(context, listen: false).fetchAndSetApi(),
         builder: (context, futureSnapshot) {
@@ -171,12 +192,15 @@ class _TranslationScreenState extends State<TranslationScreen> {
             child: Column(
               children: [
                 Container(
-                  height: 70,
-                  padding: const EdgeInsets.all(16),
-                  child: const Text(
+                  height: MediaQuery.of(context).size.width / 360 * 70,
+                  padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width / 360 * 16),
+                  child: Text(
                     textAlign: TextAlign.start,
                     '한국어:',
-                    style: TextStyle(fontSize: 20.0),
+                    style: TextStyle(
+                        fontSize:
+                            MediaQuery.of(context).size.width / 360 * 20.0),
                   ),
                 ),
                 Expanded(
@@ -190,15 +214,18 @@ class _TranslationScreenState extends State<TranslationScreen> {
                   ),
                 ),
                 Container(
-                  height: 70,
-                  padding: const EdgeInsets.all(16),
+                  height: MediaQuery.of(context).size.width / 360 * 70,
+                  padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width / 360 * 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'English:',
                         textAlign: TextAlign.start,
-                        style: TextStyle(fontSize: 20.0),
+                        style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width / 360 * 20.0),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,

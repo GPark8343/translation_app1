@@ -51,7 +51,7 @@ class _SetApiScreenState extends State<SetApiScreen> {
                   keyboardType: TextInputType.multiline,
                   focusNode: _jsonFocusNode,
                 ),
-                SizedBox(height: 100,),
+                SizedBox(height:MediaQuery.of(context).size.width/360* 100,),
                 TextButton(
                     onPressed: () async {
                       if (_keyController.text.isEmpty ||

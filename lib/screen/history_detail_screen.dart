@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translation_app/provider/history_manage.dart';
 
@@ -80,7 +81,10 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                       builder: (ctx2) {
                         return SingleChildScrollView(
                           child: Padding(
-                            padding: EdgeInsets.only(top: 100.0),
+                            padding: EdgeInsets.only(
+                                top: MediaQuery.of(context).size.width /
+                                    360 *
+                                    100.0),
                             child: AlertDialog(
                               content: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,21 +162,73 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
           child: Column(
             children: [
               Container(
-                height: 70,
-                padding: const EdgeInsets.all(16),
+                height: MediaQuery.of(context).size.width / 360 * 70,
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width / 360 * 16),
                 child: Text(
                   textAlign: TextAlign.start,
                   '${dateTime.year}년 ${dateTime.month}월 ${dateTime.day}일 ${dateTime.hour}시 ${dateTime.minute}분 ${dateTime.second}초',
-                  style: TextStyle(fontSize: 20.0),
+                  style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width / 360 * 20.0),
                 ),
               ),
               Container(
-                height: 70,
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  textAlign: TextAlign.start,
-                  '한국어:',
-                  style: TextStyle(fontSize: 20.0),
+                height: MediaQuery.of(context).size.width / 360 * 70,
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width / 360 * 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.start,
+                      '한국어:',
+                      style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width / 360 * 20.0),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          Clipboard.setData(
+                              ClipboardData(text: historyTranslatedText));
+                        },
+                        icon: Icon(Icons.copy))
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: SelectableText(
+                        historyTranslatedText,
+                        cursorColor: Colors.yellow,
+                        showCursor: true,
+                        toolbarOptions: ToolbarOptions(
+                            copy: true,
+                            selectAll: true,
+                            cut: false,
+                            paste: false),
+                      )),
+                ),
+              ),
+              Container(
+                height: MediaQuery.of(context).size.width/360*70,
+                padding: EdgeInsets.all(MediaQuery.of(context).size.width/360*16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text(
+                      'English:',
+                      textAlign: TextAlign.start,
+                      style: TextStyle(fontSize: MediaQuery.of(context).size.width/360*20.0),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: historyText));
+                        },
+                        icon: Icon(Icons.copy))
+                  ],
                 ),
               ),
               Expanded(
@@ -180,25 +236,16 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                   physics: AlwaysScrollableScrollPhysics(),
                   child: Container(
                     width: MediaQuery.of(context).size.width,
-                    child: Text(historyTranslatedText),
-                  ),
-                ),
-              ),
-              Container(
-                height: 70,
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  'English:',
-                  textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 20.0),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(historyText),
+                    child: SelectableText(
+                      historyText,
+                      cursorColor: Colors.yellow,
+                      showCursor: true,
+                      toolbarOptions: ToolbarOptions(
+                          copy: true,
+                          selectAll: true,
+                          cut: false,
+                          paste: false),
+                    ),
                   ),
                 ),
               ),
