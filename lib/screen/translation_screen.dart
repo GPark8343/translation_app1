@@ -16,10 +16,16 @@ import 'dart:convert';
 import 'package:translation_app/provider/history_manage.dart';
 
 class TranslationScreen extends StatefulWidget {
+  final int? pageIndex;
   final Function? selectPage;
+  final Function? futureFunction;
   final Function? changeVisible;
 
-  TranslationScreen({this.selectPage, this.changeVisible});
+  TranslationScreen(
+      {this.pageIndex,
+      this.selectPage,
+      this.futureFunction,
+      this.changeVisible});
 
   @override
   State<TranslationScreen> createState() => _TranslationScreenState();
@@ -85,26 +91,12 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
     streamingRecognize() async {
       widget.changeVisible!(false);
-      Future.delayed(const Duration(seconds: 300), () async {
-        await showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                content: SingleChildScrollView(
-                  child: Column(children: [
-                    (Text('최대 녹음 가능 시간 300초를 초과하여 녹음이 정지되었습니다.'))
-                  ]),
-                ),
-              );
-            });
-        text == ''
-            ? null
-            : await Provider.of<HistoryManage>(context, listen: false)
-                .addHistory('record', text, translatedText);
-        await stopRecording();
-      });
+      if (widget.pageIndex == 0 && recognizing) {
+        widget.futureFunction!(text, translatedText, stopRecording());
+      }
+
       await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
-      //  Provider.of<BottomManage>(context, listen: false).changeFalse();
+
       _audioStream = BehaviorSubject<List<int>>();
       _audioStreamSubscription = _recorder.audioStream.listen((event) {
         _audioStream!.add(event);
@@ -137,52 +129,55 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
       var responseText = '';
       var translatedResponseText = ''; //
+      if (widget.pageIndex == 0 && recognizing) {
+        responseStream.listen((data) async {
+          final currentText = data.results
+              .map((e) => e.alternatives.first.transcript)
+              .join('\n');
 
-      responseStream.listen((data) async {
-        final currentText =
-            data.results.map((e) => e.alternatives.first.transcript).join('\n');
+          final translatedCurrentText = await translateText(currentText, 'ko')
+              .onError((error, stackTrace) => ''); // onerror하는 이유: 계속 에러 나서
+          if (_scrollController1.hasClients && autoScroll) {
+            _scrollController1.animateTo(
+                _scrollController1.position.maxScrollExtent,
+                duration: Duration(milliseconds: 200),
+                curve: Curves.easeInOut);
+          }
+          if (_scrollController2.hasClients && autoScroll) {
+            _scrollController2.animateTo(
+                _scrollController2.position.maxScrollExtent,
+                duration: Duration(milliseconds: 200),
+                curve: Curves.easeInOut);
+          }
 
-        final translatedCurrentText = await translateText(currentText, 'ko'); //
-        if (_scrollController1.hasClients && autoScroll) {
-          _scrollController1.animateTo(
-              _scrollController1.position.maxScrollExtent,
-              duration: Duration(milliseconds: 200),
-              curve: Curves.easeInOut);
-        }
-        if (_scrollController2.hasClients && autoScroll) {
-          _scrollController2.animateTo(
-              _scrollController2.position.maxScrollExtent,
-              duration: Duration(milliseconds: 200),
-              curve: Curves.easeInOut);
-        }
-
-        if (data.results.first.isFinal) {
-          responseText += '\n' + currentText;
-          translatedResponseText += '\n' + translatedCurrentText;
+          if (data.results.first.isFinal) {
+            responseText += '\n' + currentText;
+            translatedResponseText += '\n' + translatedCurrentText;
+            if (this.mounted) {
+              setState(() {
+                text = responseText;
+                translatedText = translatedResponseText;
+                recognizeFinished = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                text = responseText + '\n' + currentText;
+                translatedText =
+                    translatedResponseText + '\n' + translatedCurrentText;
+                recognizeFinished = true;
+              });
+            }
+          }
+        }, onDone: () {
           if (this.mounted) {
             setState(() {
-              text = responseText;
-              translatedText = translatedResponseText;
-              recognizeFinished = true;
+              recognizing = false;
             });
           }
-        } else {
-          if (this.mounted) {
-            setState(() {
-              text = responseText + '\n' + currentText;
-              translatedText =
-                  translatedResponseText + '\n' + translatedCurrentText;
-              recognizeFinished = true;
-            });
-          }
-        }
-      }, onDone: () {
-        if (this.mounted) {
-          setState(() {
-            recognizing = false;
-          });
-        }
-      });
+        });
+      }
     }
 
     return FutureBuilder(
@@ -247,19 +242,22 @@ class _TranslationScreenState extends State<TranslationScreen> {
                           ),
                           IconButton(
                               onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return AlertDialog(
-                                        content: SingleChildScrollView(
-                                          child: Column(children: [
-                                            text == ''
-                                                ? Text('번역된 글자가 없습니다.')
-                                                : (Text('기록 저장이 완료되었습니다.'))
-                                          ]),
-                                        ),
-                                      );
-                                    });
+                                {
+                                  if (widget.pageIndex == 0)
+                                    showDialog(
+                                        context: context,
+                                        builder: (_) {
+                                          return AlertDialog(
+                                            content: SingleChildScrollView(
+                                              child: Column(children: [
+                                                text == ''
+                                                    ? Text('번역된 글자가 없습니다.')
+                                                    : (Text('기록 저장이 완료되었습니다.'))
+                                              ]),
+                                            ),
+                                          );
+                                        });
+                                }
                                 stopRecording();
                                 text == ''
                                     ? null

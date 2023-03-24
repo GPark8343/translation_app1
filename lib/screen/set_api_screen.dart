@@ -27,13 +27,16 @@ class _SetApiScreenState extends State<SetApiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(actions: []),
+        appBar: AppBar(title:Text('setting'),actions: []),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Text('setting'),
-                Text('api key를 입력하세요'),
+            
+                  SizedBox(
+                  height: MediaQuery.of(context).size.width / 360 * 50,
+                ),
+                Text('api key와 json을 입력하세요'),
                 TextFormField(
                   controller: _keyController,
                   decoration: InputDecoration(labelText: 'api key'),

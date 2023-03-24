@@ -24,3 +24,8 @@
 녹음 중에 기록 버튼 누르면 ㅈ됨 -> 해결
 
 300초 넘으면 자동 저장 후 다시 시작 -> 나중에
+
+bottomnavigator 이동 시 10초 뒤에 시작하는 함수 중 context를 포함 할 시 원래 위젯에 있던 context가 사라져서 에러 나므로 tap screen 밖에 있는 main screen 에서 함수 만들고 물려주면 됨
+
+마찬가지로 함수 실행하는 도중 화면 전환 시 에러 나는데      final translatedCurrentText = await translateText(currentText, 'ko')
+              .onError((error, stackTrace) => ''); 처럼 onerror 처리 하면 그만이야

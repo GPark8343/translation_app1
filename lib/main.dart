@@ -70,15 +70,39 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     _pages = [
       {
-        'page': TranslationScreen(selectPage: (int index) {
-          setState(() {
-            _selectedPageIndex = index;
-          });
-        }, changeVisible: (bool isVisible) {
-          setState(() {
-            _isVisible = isVisible;
-          });
-        }),
+        'page': TranslationScreen(
+            futureFunction:
+                (String text, String translatedText, Future<Null> stopRecording) {
+              Future.delayed(const Duration(seconds: 300), () async {
+                await showDialog(
+                    context: context,
+                    builder: (_) {
+                      return AlertDialog(
+                        content: SingleChildScrollView(
+                          child: Column(children: [
+                            (Text('최대 녹음 가능 시간 300초를 초과하여 녹음이 정지되었습니다.'))
+                          ]),
+                        ),
+                      );
+                    });
+                text == ''
+                    ? null
+                    : await Provider.of<HistoryManage>(context, listen: false)
+                        .addHistory('record', text, translatedText);
+                await stopRecording;
+              });
+            },
+            pageIndex: _selectedPageIndex,
+            selectPage: (int index) {
+              setState(() {
+                _selectedPageIndex = index;
+              });
+            },
+            changeVisible: (bool isVisible) {
+              setState(() {
+                _isVisible = isVisible;
+              });
+            }),
         'title': 'translation'
       },
       {'page': RepositoryScreen(), 'title': 'test'},
