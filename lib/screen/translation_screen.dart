@@ -109,7 +109,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
             streamingRecognize();
           }
           //   setState(() {
-          //      recognizing = true;//
+          //      recognizing = true;////
           //   });
           //  await streamingRecognize();
         }
