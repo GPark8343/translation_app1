@@ -18,12 +18,14 @@ import 'package:translation_app/provider/history_manage.dart';
 class TranslationScreen extends StatefulWidget {
   final int? pageIndex;
   final Function? selectPage;
+  final Function? setState;
   final Function? futureFunction;
   final Function? changeVisible;
 
   TranslationScreen(
       {this.pageIndex,
       this.selectPage,
+      this.setState,
       this.futureFunction,
       this.changeVisible});
 
@@ -36,6 +38,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
   final ScrollController _scrollController1 = ScrollController();
   final ScrollController _scrollController2 = ScrollController();
 
+  int pageIndex = 0;
   bool recognizing = false;
   bool recognizeFinished = false;
   bool autoScroll = true;
@@ -71,8 +74,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
             [0]['translatedText'];
         return translatedText;
       } else {
-        print(response.statusCode);
-        print(response.body);
         throw Exception('Failed to translate text');
       }
     }
@@ -91,9 +92,28 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
     streamingRecognize() async {
       widget.changeVisible!(false);
-      if (widget.pageIndex == 0 && recognizing) {
-        widget.futureFunction!(text, translatedText, stopRecording());
-      }
+
+      Future.delayed(const Duration(seconds: 300), () async {
+        if (this.mounted) {
+          widget.setState!();
+          setState(() {});
+        }
+
+        print(recognizing);
+        print(widget.pageIndex);
+        print(pageIndex);
+        if (pageIndex == 0 && recognizing) {
+          await widget.futureFunction!(text, translatedText, stopRecording());
+          print(recognizing);
+          if (recognizing == false) {
+            streamingRecognize();
+          }
+          //   setState(() {
+          //      recognizing = true;
+          //   });
+          //  await streamingRecognize();
+        }
+      }); //무조건 10초 뒤에 시행되나 두 조건이 모두 만족하므로 스톱한다
 
       await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
 
@@ -129,14 +149,16 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
       var responseText = '';
       var translatedResponseText = ''; //
-      if (widget.pageIndex == 0 && recognizing) {
+      if (recognizing) {
         responseStream.listen((data) async {
           final currentText = data.results
               .map((e) => e.alternatives.first.transcript)
               .join('\n');
-
-          final translatedCurrentText = await translateText(currentText, 'ko')
-              .onError((error, stackTrace) => ''); // onerror하는 이유: 계속 에러 나서
+          // currentText == '' ? print('no') : print('okay');
+          final translatedCurrentText = currentText == ''
+              ? ''
+              : await translateText(currentText, 'ko')
+                  .onError((error, stackTrace) => ''); // onerror하는 이유: 계속 에러 나서
           if (_scrollController1.hasClients && autoScroll) {
             _scrollController1.animateTo(
                 _scrollController1.position.maxScrollExtent,
@@ -243,7 +265,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                           IconButton(
                               onPressed: () {
                                 {
-                                  if (widget.pageIndex == 0)
+                               
                                     showDialog(
                                         context: context,
                                         builder: (_) {
@@ -266,6 +288,11 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                         .addHistory(
                                             'record', text, translatedText);
                                 text == '' ? null : widget.selectPage!(1);
+                                text == ''
+                                    ? null
+                                    : setState(() {
+                                        pageIndex = 1;
+                                      });
                               },
                               icon: Icon(Icons.save)),
                           IconButton(
@@ -290,7 +317,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                           });
                                     }
                                   : (recognizing
-                                      ? Provider.of<ApiManage>(context,
+                                      ? (Provider.of<ApiManage>(context,
                                                   listen: false)
                                               .items
                                               .isEmpty
@@ -314,8 +341,8 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                                       ),
                                                     );
                                                   });
-                                            }
-                                      : Provider.of<ApiManage>(context,
+                                            })
+                                      : (Provider.of<ApiManage>(context,
                                                   listen: false)
                                               .items
                                               .isEmpty
@@ -327,18 +354,28 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                               streamingRecognize();
                                               showDialog(
                                                   context: context,
+                                                  barrierDismissible: false,
                                                   builder: (_) {
-                                                    return AlertDialog(
-                                                      content:
-                                                          SingleChildScrollView(
-                                                        child: Column(
-                                                            children: [
-                                                              (Text('녹음 중.'))
-                                                            ]),
+                                                    Future.delayed(
+                                                        Duration(seconds: 1),
+                                                        () {
+                                                      Navigator.pop(context);
+                                                    });
+                                                    return WillPopScope(
+                                                      onWillPop: () =>
+                                                          Future.value(false),
+                                                      child: AlertDialog(
+                                                        content:
+                                                            SingleChildScrollView(
+                                                          child: Column(
+                                                              children: [
+                                                                (Text('녹음 중.'))
+                                                              ]),
+                                                        ),
                                                       ),
                                                     );
                                                   });
-                                            }),
+                                            })),
                               icon:
                                   Icon(recognizing ? Icons.mic_off : Icons.mic))
                         ],

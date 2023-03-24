@@ -71,32 +71,42 @@ class _MyHomePageState extends State<MyHomePage> {
     _pages = [
       {
         'page': TranslationScreen(
-            futureFunction:
-                (String text, String translatedText, Future<Null> stopRecording) {
-              Future.delayed(const Duration(seconds: 300), () async {
-                await showDialog(
-                    context: context,
-                    builder: (_) {
-                      return AlertDialog(
+            futureFunction: (String text, String translatedText,
+                Future<Null> stopRecording) async {
+              await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) {
+                    Future.delayed(Duration(seconds: 1), () {
+                      Navigator.pop(context);
+                    });
+                    return WillPopScope(
+                      onWillPop: () => Future.value(false),
+                      child: AlertDialog(
                         content: SingleChildScrollView(
                           child: Column(children: [
-                            (Text('최대 녹음 가능 시간 300초를 초과하여 녹음이 정지되었습니다.'))
+                            (Text(
+                                '최대 녹음 가능 시간 300초를 초과하여 녹음이 정지되었습니다.\n1초 뒤에 다시 녹음이 시작됩니다.'))
                           ]),
                         ),
-                      );
-                    });
-                text == ''
-                    ? null
-                    : await Provider.of<HistoryManage>(context, listen: false)
-                        .addHistory('record', text, translatedText);
-                await stopRecording;
-              });
+                      ),
+                    );
+                  });
+
+              text == ''
+                  ? null
+                  : await Provider.of<HistoryManage>(context, listen: false)
+                      .addHistory('record', text, translatedText);
+              await stopRecording;
             },
             pageIndex: _selectedPageIndex,
             selectPage: (int index) {
               setState(() {
                 _selectedPageIndex = index;
               });
+            },
+            setState: () {
+              setState(() {});
             },
             changeVisible: (bool isVisible) {
               setState(() {

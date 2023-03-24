@@ -29,3 +29,6 @@ bottomnavigator 이동 시 10초 뒤에 시작하는 함수 중 context를 포�
 
 마찬가지로 함수 실행하는 도중 화면 전환 시 에러 나는데      final translatedCurrentText = await translateText(currentText, 'ko')
               .onError((error, stackTrace) => ''); 처럼 onerror 처리 하면 그만이야
+
+
+  if (widget.pageIndex == 0 && recognizing) {}translation screen 95번쨰 줄에서 멈췄는데 계속 recognizing 트루로 나와서 10초뒤에 비정상적으로 모델을 보여줌 고쳐야됨 -> translation screen에 pageindex 변수 추가해서 가능하게 함
