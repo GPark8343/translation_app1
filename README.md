@@ -32,3 +32,5 @@ bottomnavigator 이동 시 10초 뒤에 시작하는 함수 중 context를 포�
 
 
   if (widget.pageIndex == 0 && recognizing) {}translation screen 95번쨰 줄에서 멈췄는데 계속 recognizing 트루로 나와서 10초뒤에 비정상적으로 모델을 보여줌 고쳐야됨 -> translation screen에 pageindex 변수 추가해서 가능하게 함
+
+  이제 permission handler 이용해서 마이크 버튼 누를 때 권한 묻고, 앱 이용약관이랑 개인정보처리 방침 세우고 앱 시작 전에 설치한 후에 한 번만 묻도록 한 뒤, play store 제출

@@ -14,6 +14,7 @@ import 'dart:convert';
 
 import 'package:translation_app/provider/history_manage.dart';
 import 'package:translation_app/screen/history_detail_screen.dart';
+import 'package:translation_app/screen/info_screen.dart';
 import 'package:translation_app/screen/repository_screen.dart';
 import 'package:translation_app/screen/set_api_screen.dart';
 import 'package:translation_app/screen/setting_screen.dart';
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
             HistoryDetailSscreen.routeName: (ctx) => HistoryDetailSscreen(),
             SettingScreen.routeName: (ctx) => SettingScreen(),
             SetApiScreen.routeName: (ctx) => SetApiScreen(),
+            InfoScreen.routeName: (ctx) =>  InfoScreen(),
           },
         ));
   }
@@ -141,6 +143,35 @@ class _MyHomePageState extends State<MyHomePage> {
           return Scaffold(
             appBar: AppBar(
                 actions: [
+                  IconButton(
+                      onPressed: () {
+                        Route _createRoute() {
+                          return PageRouteBuilder(
+                            settings: RouteSettings(arguments: {}),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    InfoScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              const begin = Offset(0.0, 1.0);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
+
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          );
+                        }
+
+                        Navigator.of(context).push(_createRoute());
+                      },
+                      icon:Icon(Icons.help_outline_sharp),),
+                  
                   IconButton(
                       onPressed: () {
                         Route _createRoute() {
