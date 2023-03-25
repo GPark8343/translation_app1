@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translation_app/provider/api_manage.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/gestures.dart';
 
 class SetApiScreen extends StatefulWidget {
   static const routeName = '/set-api';
@@ -27,13 +29,35 @@ class _SetApiScreenState extends State<SetApiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title:Text('setting'),actions: []),
+        appBar: AppBar(title: Text('setting'), actions: []),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-            
-                  SizedBox(
+                SizedBox(
+                  height: MediaQuery.of(context).size.width / 360 * 50,
+                ),
+                Text.rich(
+                  TextSpan(
+                      style: TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline),
+                      //make link blue and underline
+                      text: "api key랑 json 가져오는 법 알아보기",
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () async {
+                          //on tap code here, you can navigate to other page or URL
+                          String url =
+                              "https://blog.naver.com/genius8343/223055543379";
+                          var urllaunchable = await canLaunch(
+                              url); //canLaunch is from url_launcher package
+                          if (urllaunchable) {
+                            await launch(
+                                url); //launch is from url_launcher package to launch URL
+                          } else {}
+                        }),
+                ),
+                SizedBox(
                   height: MediaQuery.of(context).size.width / 360 * 50,
                 ),
                 Text('api key와 json을 입력하세요'),
@@ -54,7 +78,9 @@ class _SetApiScreenState extends State<SetApiScreen> {
                   keyboardType: TextInputType.multiline,
                   focusNode: _jsonFocusNode,
                 ),
-                SizedBox(height:MediaQuery.of(context).size.width/360* 100,),
+                SizedBox(
+                  height: MediaQuery.of(context).size.width / 360 * 100,
+                ),
                 TextButton(
                     onPressed: () async {
                       if (_keyController.text.isEmpty ||
