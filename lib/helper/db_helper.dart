@@ -4,6 +4,7 @@ import 'package:path/path.dart' as path;
 import 'package:sqflite/sqlite_api.dart';
 import 'package:translation_app/models/api.dart';
 import 'package:translation_app/models/history.dart';
+import 'package:translation_app/models/user.dart';
 
 class DBHelper {
   static Future<Database> historyDatabase() async {
@@ -80,6 +81,50 @@ static Future<Database> apiDatabase() async {
 
   static Future deleteApi(String table, String id) async {
     final db = await DBHelper.apiDatabase();
+    await db.delete(
+      table, // table name
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+
+
+
+
+static Future<Database> userDatabase() async {
+    final dbPath = await sql.getDatabasesPath();
+    return sql.openDatabase(path.join(dbPath, 'User.db'),
+        onCreate: (db, version) {
+      return db.execute(
+          'CREATE TABLE User(id TEXT PRIMARY KEY, first TEXT, created_at TEXT)');
+    }, version: 1);
+  }
+
+  static Future<void> insertUser(String table, Map<String, Object> data) async {
+    final db = await DBHelper.userDatabase();
+    db.insert(table, data, conflictAlgorithm: sql.ConflictAlgorithm.replace);
+  }
+
+  static Future<List<Map<String, dynamic>>> getUserData(String table) async {
+    final db = await DBHelper.userDatabase();
+    return db.query(table);
+  }
+
+ static Future updateUser(String table, User user) async {
+  final db = await DBHelper.userDatabase();
+  await db.update(
+    table,  // table name
+    user.toMap()
+    ,  // update post row data
+    where: 'id = ?',
+    whereArgs: [user.id],
+  );
+}
+
+
+  static Future deleteUser(String table, String id) async {
+    final db = await DBHelper.userDatabase();
     await db.delete(
       table, // table name
       where: 'id = ?',

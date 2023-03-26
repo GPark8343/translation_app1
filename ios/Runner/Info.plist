@@ -7,6 +7,8 @@
 	<string>sms</string>
 	<string>tel</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>microphone</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

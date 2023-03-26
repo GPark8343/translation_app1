@@ -11,8 +11,9 @@ import 'package:http/http.dart' as http;
 import 'package:translation_app/provider/api_manage.dart';
 
 import 'dart:convert';
-
+import 'package:flutter/gestures.dart';
 import 'package:translation_app/provider/history_manage.dart';
+import 'package:translation_app/provider/user_manage.dart';
 import 'package:translation_app/screen/history_detail_screen.dart';
 import 'package:translation_app/screen/info_screen.dart';
 import 'package:translation_app/screen/repository_screen.dart';
@@ -20,6 +21,7 @@ import 'package:translation_app/screen/set_api_screen.dart';
 import 'package:translation_app/screen/setting_screen.dart';
 import 'package:translation_app/screen/translation_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   await initializeDateFormatting();
@@ -42,6 +44,9 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: ApiManage(),
           ),
+          ChangeNotifierProvider.value(
+            value: UserManage(),
+          ),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -51,7 +56,7 @@ class MyApp extends StatelessWidget {
             HistoryDetailSscreen.routeName: (ctx) => HistoryDetailSscreen(),
             SettingScreen.routeName: (ctx) => SettingScreen(),
             SetApiScreen.routeName: (ctx) => SetApiScreen(),
-            InfoScreen.routeName: (ctx) =>  InfoScreen(),
+            InfoScreen.routeName: (ctx) => InfoScreen(),
           },
         ));
   }
@@ -137,41 +142,169 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    first() async {
+      await Provider.of<UserManage>(context, listen: false).fetchAndSetUser();
+      await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
+      print(Provider.of<UserManage>(context, listen: false).items);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (Provider.of<UserManage>(context, listen: false).items.isEmpty)
+          showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (ctx) {
+                return WillPopScope(
+                  onWillPop: () async => false,
+                  child: AlertDialog(
+                    title: const Text('개인 정보 동의'),
+                    content: SingleChildScrollView(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text("회원가입 및 Undersound의 이용약관 및 개인정보처리방침에 동의하시겠습니까?"),
+                          GestureDetector(
+                            onTap: () {
+                              // Navigator.of(context)
+                              //     .pushNamed(ServiceScreen.routeName);
+                            },
+                            child: Card(
+                                child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                           Text.rich(
+                                  TextSpan(
+                                      style: TextStyle(
+                                          color: Colors.blue,
+                                          decoration: TextDecoration.underline),
+                                      //make link blue and underline
+                                      text: "앱 서비스 이용약관 보기",
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () async {
+                                          //on tap code here, you can navigate to other page or URL
+                                          String url =
+                                              "https://sites.google.com/view/undersound-terms-of-use";
+                                          var urllaunchable = await canLaunch(
+                                              url); //canLaunch is from url_launcher package
+                                          if (urllaunchable) {
+                                            await launch(
+                                                url); //launch is from url_launcher package to launch URL
+                                          } else {}
+                                        }),
+                                ),
+                                Icon(Icons.arrow_right_alt_rounded)
+                              ],
+                            )),
+                          ),
+                          SizedBox(
+                            height:
+                                MediaQuery.of(context).size.width / 360 * 20,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              // Navigator.of(context)
+                              //     .pushNamed(PrivacyScreen.routeName);
+                            },
+                            child: Card(
+                                child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Text.rich(
+                                  TextSpan(
+                                      style: TextStyle(
+                                          color: Colors.blue,
+                                          decoration: TextDecoration.underline),
+                                      //make link blue and underline
+                                      text: "개인정보처리방침 보기",
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () async {
+                                          //on tap code here, you can navigate to other page or URL
+                                          String url =
+                                              "https://sites.google.com/view/undersound-privacy-policy";
+                                          var urllaunchable = await canLaunch(
+                                              url); //canLaunch is from url_launcher package
+                                          if (urllaunchable) {
+                                            await launch(
+                                                url); //launch is from url_launcher package to launch URL
+                                          } else {}
+                                        }),
+                                ),
+                                Icon(Icons.arrow_right_alt_rounded)
+                              ],
+                            )),
+                          ),
+                          SizedBox(
+                            height:
+                                MediaQuery.of(context).size.width / 360 * 20,
+                          ),
+                          Text('또한 아래와 같은 권한이 필요합니다.'),
+                          SizedBox(
+                            height:
+                                MediaQuery.of(context).size.width / 360 * 10,
+                          ),
+                          Card(
+                            child: Text('1. 마이크(녹음 및 오디오 인식 목적)'),
+                          ),
+                        
+                        ])),
+                    actions: <Widget>[
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black),
+                        onPressed: () {},
+                        child: const Text('동의하지 않습니다.'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Provider.of<UserManage>(context, listen: false)
+                              .addUser();
+                        },
+                        child: const Text('동의합니다'),
+                      ),
+                    ],
+                  ),
+                );
+              });
+      });
+    }
+
     return FutureBuilder(
-        future: Provider.of<ApiManage>(context, listen: false).fetchAndSetApi(),
+        future: first(),
         builder: (context, snapshot) {
+          print(Provider.of<UserManage>(context, listen: false).items);
           return Scaffold(
             appBar: AppBar(
                 actions: [
                   IconButton(
-                      onPressed: () {
-                        Route _createRoute() {
-                          return PageRouteBuilder(
-                            settings: RouteSettings(arguments: {}),
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    InfoScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.ease;
+                    onPressed: () {
+                      Route _createRoute() {
+                        return PageRouteBuilder(
+                          settings: RouteSettings(arguments: {}),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  InfoScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0);
+                            const end = Offset.zero;
+                            const curve = Curves.ease;
 
-                              var tween = Tween(begin: begin, end: end)
-                                  .chain(CurveTween(curve: curve));
+                            var tween = Tween(begin: begin, end: end)
+                                .chain(CurveTween(curve: curve));
 
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: child,
-                              );
-                            },
-                          );
-                        }
+                            return SlideTransition(
+                              position: animation.drive(tween),
+                              child: child,
+                            );
+                          },
+                        );
+                      }
 
-                        Navigator.of(context).push(_createRoute());
-                      },
-                      icon:Icon(Icons.help_outline_sharp),),
-                  
+                      Navigator.of(context).push(_createRoute());
+                    },
+                    icon: Icon(Icons.help_outline_sharp),
+                  ),
                   IconButton(
                       onPressed: () {
                         Route _createRoute() {

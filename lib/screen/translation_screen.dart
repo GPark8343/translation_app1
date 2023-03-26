@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'dart:async';
-
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_speech/google_speech.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +52,20 @@ class _TranslationScreenState extends State<TranslationScreen> {
     super.initState();
 
     _recorder.initialize();
+  }
+
+  Future<void> _requestMicrophonePermission(Function function) async {
+    final serviceStatus = await Permission.camera.isGranted;
+
+    bool isCameraOn = serviceStatus == ServiceStatus.enabled;
+
+    final status = await Permission.camera.request();
+
+    if (status == PermissionStatus.granted) {
+    } else if (status == PermissionStatus.denied) {
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      await openAppSettings();
+    }
   }
 
   @override
@@ -265,20 +279,19 @@ class _TranslationScreenState extends State<TranslationScreen> {
                           IconButton(
                               onPressed: () {
                                 {
-                               
-                                    showDialog(
-                                        context: context,
-                                        builder: (_) {
-                                          return AlertDialog(
-                                            content: SingleChildScrollView(
-                                              child: Column(children: [
-                                                text == ''
-                                                    ? Text('번역된 글자가 없습니다.')
-                                                    : (Text('기록 저장이 완료되었습니다.'))
-                                              ]),
-                                            ),
-                                          );
-                                        });
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return AlertDialog(
+                                          content: SingleChildScrollView(
+                                            child: Column(children: [
+                                              text == ''
+                                                  ? Text('번역된 글자가 없습니다.')
+                                                  : (Text('기록 저장이 완료되었습니다.'))
+                                            ]),
+                                          ),
+                                        );
+                                      });
                                 }
                                 stopRecording();
                                 text == ''
@@ -296,25 +309,41 @@ class _TranslationScreenState extends State<TranslationScreen> {
                               },
                               icon: Icon(Icons.save)),
                           IconButton(
-                              onPressed: Provider.of<ApiManage>(context,
+                              onPressed: (Provider.of<ApiManage>(context,
                                           listen: false)
                                       .items
                                       .isEmpty
-                                  ? () {
-                                      Provider.of<ApiManage>(context,
-                                              listen: false)
-                                          .fetchAndSetApi();
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) {
-                                            return AlertDialog(
-                                              content: SingleChildScrollView(
-                                                child: Column(children: [
-                                                  (Text('설정을 먼저 진행해주세요.'))
-                                                ]),
-                                              ),
-                                            );
-                                          });
+                                  ? () async {
+                                      final serviceStatus =
+                                          await Permission.microphone.isGranted;
+
+                                      bool isMicrophoneOn = serviceStatus ==
+                                          ServiceStatus.enabled;
+
+                                      final status =
+                                          await Permission.microphone.request();
+
+                                      if (status == PermissionStatus.granted) {
+                                        Provider.of<ApiManage>(context,
+                                                listen: false)
+                                            .fetchAndSetApi();
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) {
+                                              return AlertDialog(
+                                                content: SingleChildScrollView(
+                                                  child: Column(children: [
+                                                    (Text('설정을 먼저 진행해주세요.'))
+                                                  ]),
+                                                ),
+                                              );
+                                            });
+                                      } else if (status ==
+                                          PermissionStatus.denied) {
+                                      } else if (status ==
+                                          PermissionStatus.permanentlyDenied) {
+                                        await openAppSettings();
+                                      }
                                     }
                                   : (recognizing
                                       ? (Provider.of<ApiManage>(context,
@@ -322,60 +351,102 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                               .items
                                               .isEmpty
                                           ? null
-                                          : () {
-                                              Provider.of<ApiManage>(context,
-                                                      listen: false)
-                                                  .fetchAndSetApi();
+                                          : () async {
+                                              final serviceStatus =
+                                                  await Permission
+                                                      .microphone.isGranted;
 
-                                              stopRecording();
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (_) {
-                                                    return AlertDialog(
-                                                      content:
-                                                          SingleChildScrollView(
-                                                        child:
-                                                            Column(children: [
-                                                          (Text('녹음이 정지되었습니다.'))
-                                                        ]),
-                                                      ),
-                                                    );
-                                                  });
+                                              bool isMicrophoneOn = serviceStatus ==
+                                                  ServiceStatus.enabled;
+
+                                              final status = await Permission
+                                                  .microphone
+                                                  .request();
+
+                                              if (status ==
+                                                  PermissionStatus.granted) {
+                                                Provider.of<ApiManage>(context,
+                                                        listen: false)
+                                                    .fetchAndSetApi();
+
+                                                stopRecording();
+                                                showDialog(
+                                                    context: context,
+                                                    builder: (_) {
+                                                      return AlertDialog(
+                                                        content:
+                                                            SingleChildScrollView(
+                                                          child: Column(
+                                                              children: [
+                                                                (Text(
+                                                                    '녹음이 정지되었습니다.'))
+                                                              ]),
+                                                        ),
+                                                      );
+                                                    });
+                                              } else if (status ==
+                                                  PermissionStatus.denied) {
+                                              } else if (status ==
+                                                  PermissionStatus
+                                                      .permanentlyDenied) {
+                                                await openAppSettings();
+                                              }
                                             })
                                       : (Provider.of<ApiManage>(context,
                                                   listen: false)
                                               .items
                                               .isEmpty
                                           ? null
-                                          : () {
-                                              Provider.of<ApiManage>(context,
-                                                      listen: false)
-                                                  .fetchAndSetApi();
-                                              streamingRecognize();
-                                              showDialog(
-                                                  context: context,
-                                                  barrierDismissible: false,
-                                                  builder: (_) {
-                                                    Future.delayed(
-                                                        Duration(seconds: 1),
-                                                        () {
-                                                      Navigator.pop(context);
-                                                    });
-                                                    return WillPopScope(
-                                                      onWillPop: () =>
-                                                          Future.value(false),
-                                                      child: AlertDialog(
-                                                        content:
-                                                            SingleChildScrollView(
-                                                          child: Column(
-                                                              children: [
-                                                                (Text('녹음 중.'))
-                                                              ]),
+                                          : () async {
+                                              final serviceStatus =
+                                                  await Permission
+                                                      .microphone.isGranted;
+
+                                              bool isMicrophoneOn = serviceStatus ==
+                                                  ServiceStatus.enabled;
+
+                                              final status = await Permission
+                                                  .microphone
+                                                  .request();
+
+                                              if (status ==
+                                                  PermissionStatus.granted) {
+                                                Provider.of<ApiManage>(context,
+                                                        listen: false)
+                                                    .fetchAndSetApi();
+                                                streamingRecognize();
+                                                showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (_) {
+                                                      Future.delayed(
+                                                          Duration(seconds: 1),
+                                                          () {
+                                                        Navigator.pop(context);
+                                                      });
+                                                      return WillPopScope(
+                                                        onWillPop: () =>
+                                                            Future.value(false),
+                                                        child: AlertDialog(
+                                                          content:
+                                                              SingleChildScrollView(
+                                                            child: Column(
+                                                                children: [
+                                                                  (Text(
+                                                                      '녹음 중.'))
+                                                                ]),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    );
-                                                  });
-                                            })),
+                                                      );
+                                                    });
+                                              } else if (status ==
+                                                  PermissionStatus.denied) {
+                                              } else if (status ==
+                                                  PermissionStatus
+                                                      .permanentlyDenied) {
+                                                await openAppSettings();
+                                              }
+                                            }))),
                               icon:
                                   Icon(recognizing ? Icons.mic_off : Icons.mic))
                         ],
