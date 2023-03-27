@@ -15,7 +15,7 @@
         </intent>
     </queries>
     <application
-        android:label="translation_app"
+        android:label="undersound"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -41,3 +41,17 @@ bottomnavigator 이동 시 10초 뒤에 시작하는 함수 중 context를 포�
    앱 이용약관이랑 개인정보처리 방침 세우고 
    앱 시작 전에 설치한 후에 한 번만 묻도록 한 뒤(sqflite로 해보자 왜냐하면 한 번만 묻는 건 얘야), (1시간~1시간 30분) -> 완료
    play store 제출
+
+
+
+ // var findedHistory =
+                                    //     await Provider.of<HistoryManage>(
+                                    //             context,
+                                    //             listen: false)
+                                    //         .findById(historyId); //이거 되냐
+
+target language와 original language 2개를 구분해서 history db에 저장(언어 늘린다면)
+
+
+'package:flutter/src/animation/animation_controller.dart': Failed assertion: line 821 pos 12: 'elapsedInSeconds >= 0.0': is not true.
+이거 오류 머임?

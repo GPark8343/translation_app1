@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:translation_app/provider/api_manage.dart';
 import 'package:translation_app/provider/history_manage.dart';
+import 'package:http/http.dart' as http;
 
 class HistoryDetailSscreen extends StatefulWidget {
   static const routeName = '/history-detail';
@@ -25,7 +29,12 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
         as Map)['history_translatedText'];
     final historyCreatedAt = (ModalRoute.of(context)?.settings.arguments
         as Map)['history_createdAt'];
+    final historyIsTranslated = (ModalRoute.of(context)?.settings.arguments
+        as Map)['history_isTranslated'];
     DateTime dateTime = DateTime.parse(historyCreatedAt);
+    var findedHistory =
+        Provider.of<HistoryManage>(context, listen: false).findById(historyId);
+
     return Scaffold(
         appBar: AppBar(
           title: Text('${historyTitle}'),
@@ -129,11 +138,11 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                                       // 빈 스토리는 작성 못하게 해야 함
                                       return;
                                     }
-                                    var findedHistory =
-                                        await Provider.of<HistoryManage>(
-                                                context,
-                                                listen: false)
-                                            .findById(historyId);
+                                    // var findedHistory =
+                                    //     await Provider.of<HistoryManage>(
+                                    //             context,
+                                    //             listen: false)
+                                    //         .findById(historyId); //이거 되냐
                                     await Provider.of<HistoryManage>(context,
                                             listen: false)
                                         .changeTitle(findedHistory,
@@ -181,7 +190,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                   children: [
                     Text(
                       textAlign: TextAlign.start,
-                      '한국어:',
+                      '번역된 언어:',
                       style: TextStyle(
                           fontSize:
                               MediaQuery.of(context).size.width / 360 * 20.0),
@@ -213,15 +222,18 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                 ),
               ),
               Container(
-                height: MediaQuery.of(context).size.width/360*70,
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width/360*16),
+                height: MediaQuery.of(context).size.width / 360 * 70,
+                padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width / 360 * 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                  Text(
-                      'English:',
+                    Text(
+                      '인식된 언어:',
                       textAlign: TextAlign.start,
-                      style: TextStyle(fontSize: MediaQuery.of(context).size.width/360*20.0),
+                      style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width / 360 * 20.0),
                     ),
                     IconButton(
                         onPressed: () {

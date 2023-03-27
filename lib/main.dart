@@ -8,6 +8,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:sound_stream/sound_stream.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:translation_app/colors.dart';
+import 'package:translation_app/data/language_list.dart';
 import 'package:translation_app/provider/api_manage.dart';
 
 import 'dart:convert';
@@ -50,7 +52,13 @@ class MyApp extends StatelessWidget {
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
+          title: 'undersound',
+          theme: ThemeData(
+            scaffoldBackgroundColor: Colors.white,
+            appBarTheme: const AppBarTheme(
+              color: mainColor,
+            ),
+          ),
           home: MyHomePage(),
           routes: {
             HistoryDetailSscreen.routeName: (ctx) => HistoryDetailSscreen(),
@@ -170,7 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                           Text.rich(
+                                Icon(Icons.arrow_right_alt_rounded),
+                                Text.rich(
                                   TextSpan(
                                       style: TextStyle(
                                           color: Colors.blue,
@@ -190,7 +199,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                           } else {}
                                         }),
                                 ),
-                                Icon(Icons.arrow_right_alt_rounded)
                               ],
                             )),
                           ),
@@ -207,6 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
+                                Icon(Icons.arrow_right_alt_rounded),
                                 Text.rich(
                                   TextSpan(
                                       style: TextStyle(
@@ -227,7 +236,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                           } else {}
                                         }),
                                 ),
-                                Icon(Icons.arrow_right_alt_rounded)
                               ],
                             )),
                           ),
@@ -241,20 +249,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                 MediaQuery.of(context).size.width / 360 * 10,
                           ),
                           Card(
-                            child: Text('1. 마이크(녹음 및 오디오 인식 목적)'),
+                            child: Row(
+                              children: [
+                                Icon(Icons.mic),
+                                Text('마이크(녹음 및 오디오 인식)'),
+                              ],
+                            ),
                           ),
-                        
                         ])),
                     actions: <Widget>[
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black),
+                            backgroundColor: mainColor),
                         onPressed: () {},
                         child: const Text('동의하지 않습니다.'),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black),
+                            backgroundColor: mainColor),
                         onPressed: () {
                           Navigator.of(context).pop();
                           Provider.of<UserManage>(context, listen: false)
@@ -272,51 +284,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return FutureBuilder(
         future: first(),
         builder: (context, snapshot) {
-          print(Provider.of<UserManage>(context, listen: false).items);
-          return Scaffold(
-            appBar: AppBar(
-                actions: [
-                  IconButton(
-                    onPressed: () {
-                      Route _createRoute() {
-                        return PageRouteBuilder(
-                          settings: RouteSettings(arguments: {}),
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  InfoScreen(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            const begin = Offset(0.0, 1.0);
-                            const end = Offset.zero;
-                            const curve = Curves.ease;
-
-                            var tween = Tween(begin: begin, end: end)
-                                .chain(CurveTween(curve: curve));
-
-                            return SlideTransition(
-                              position: animation.drive(tween),
-                              child: child,
-                            );
-                          },
-                        );
-                      }
-
-                      Navigator.of(context).push(_createRoute());
-                    },
-                    icon: Icon(Icons.help_outline_sharp),
-                  ),
-                  IconButton(
+          if (Provider.of<UserManage>(context, listen: false).items.isEmpty) {
+            return Scaffold();
+          } else {
+            String selectedOriginalLanguageCode =
+                Provider.of<UserManage>(context, listen: false)
+                    .items[0]
+                    .originalLanguage;
+            String selectedTargetLanguageCode =
+                Provider.of<UserManage>(context, listen: false)
+                    .items[0]
+                    .targetLanguage;
+            print(Provider.of<UserManage>(context, listen: false).items);
+            return Scaffold(
+             
+              appBar: AppBar(
+                  actions: [
+                    IconButton(
                       onPressed: () {
                         Route _createRoute() {
                           return PageRouteBuilder(
                             settings: RouteSettings(arguments: {}),
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>
-                                    SettingScreen(selectPage: (int index) {
-                              setState(() {
-                                _selectedPageIndex = index;
-                              });
-                            }),
+                                    InfoScreen(),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);
@@ -336,33 +327,68 @@ class _MyHomePageState extends State<MyHomePage> {
 
                         Navigator.of(context).push(_createRoute());
                       },
-                      icon: Icon(Icons.settings))
-                ],
-                title: Text(
-                  _selectedPageIndex == 0 ? '번역' : '기록 보관소',
-                )),
-            body: SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),
-            bottomNavigationBar: Visibility(
-              visible: _isVisible,
-              child: BottomNavigationBar(
-                  selectedItemColor: Color(0xFF00B6F0),
-                  onTap: _selectPage,
-                  backgroundColor: Color(0xFFF2F3F8),
-                  unselectedItemColor: Colors.black,
-                  currentIndex: _selectedPageIndex,
-                  type: BottomNavigationBarType.fixed,
-                  items: [
-                    BottomNavigationBarItem(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        icon: Icon(Icons.home_outlined),
-                        label: '홈'),
-                    BottomNavigationBarItem(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        icon: Icon(Icons.file_copy),
-                        label: '기록'),
-                  ]),
-            ),
-          );
+                      icon: Icon(Icons.help_outline_sharp),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          Route _createRoute() {
+                            return PageRouteBuilder(
+                              settings: RouteSettings(arguments: {}),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      SettingScreen(selectPage: (int index) {
+                                setState(() {
+                                  _selectedPageIndex = index;
+                                });
+                              }),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                const begin = Offset(0.0, 1.0);
+                                const end = Offset.zero;
+                                const curve = Curves.ease;
+
+                                var tween = Tween(begin: begin, end: end)
+                                    .chain(CurveTween(curve: curve));
+
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: child,
+                                );
+                              },
+                            );
+                          }
+
+                          Navigator.of(context).push(_createRoute());
+                        },
+                        icon: Icon(Icons.settings))
+                  ],
+                  title: Text(
+                    _selectedPageIndex == 0 ? '번역' : '기록 보관소',
+                  )),
+              body:
+                  SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),
+              bottomNavigationBar: Visibility(
+                visible: _isVisible,
+                child: BottomNavigationBar(
+                    selectedItemColor: mainColor,
+                    onTap: _selectPage,
+                    backgroundColor: Color(0xFFF2F3F8),
+                    unselectedItemColor: Colors.black,
+                    currentIndex: _selectedPageIndex,
+                    type: BottomNavigationBarType.fixed,
+                    items: [
+                      BottomNavigationBarItem(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          icon: Icon(Icons.home_outlined),
+                          label: '홈'),
+                      BottomNavigationBarItem(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          icon: Icon(Icons.file_copy),
+                          label: '기록'),
+                    ]),
+              ),
+            );
+          }
         });
   }
 }

@@ -9,11 +9,13 @@ import 'package:rxdart/rxdart.dart';
 import 'package:sound_stream/sound_stream.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:translation_app/data/language_list.dart';
 import 'package:translation_app/provider/api_manage.dart';
 
 import 'dart:convert';
 
 import 'package:translation_app/provider/history_manage.dart';
+import 'package:translation_app/provider/user_manage.dart';
 
 class TranslationScreen extends StatefulWidget {
   final int? pageIndex;
@@ -104,7 +106,21 @@ class _TranslationScreenState extends State<TranslationScreen> {
       }
     }
 
-    streamingRecognize() async {
+    RecognitionConfig _getConfig(String languageCode) {
+      var model = RecognitionModel.basic;
+      if (languageCode == 'en-US') {
+        model = RecognitionModel.video;
+      }
+      print(model);
+      return RecognitionConfig(
+          encoding: AudioEncoding.LINEAR16,
+          model: model,
+          enableAutomaticPunctuation: true,
+          sampleRateHertz: 16000,
+          languageCode: languageCode);
+    }
+
+    streamingRecognize(String original, String target) async {
       widget.changeVisible!(false);
 
       Future.delayed(const Duration(seconds: 300), () async {
@@ -120,7 +136,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
           await widget.futureFunction!(text, translatedText, stopRecording());
           print(recognizing);
           if (recognizing == false) {
-            streamingRecognize();
+            streamingRecognize(original, target);
           }
           //   setState(() {
           //      recognizing = true;//////
@@ -143,19 +159,13 @@ class _TranslationScreenState extends State<TranslationScreen> {
         });
       }
 
-      RecognitionConfig _getConfig() => RecognitionConfig(
-          encoding: AudioEncoding.LINEAR16,
-          model: RecognitionModel.video,
-          enableAutomaticPunctuation: true,
-          sampleRateHertz: 16000,
-          languageCode: 'en-US');
       String json2 =
           Provider.of<ApiManage>(context, listen: false).items.isEmpty
               ? ''
               : Provider.of<ApiManage>(context, listen: false).items[0].json;
       final serviceAccount = ServiceAccount.fromString(json2);
       final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
-      final config = _getConfig();
+      final config = _getConfig(original); //이거 수정
 
       final responseStream = speechToText.streamingRecognize(
           StreamingRecognitionConfig(config: config, interimResults: true),
@@ -171,7 +181,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
           // currentText == '' ? print('no') : print('okay');
           final translatedCurrentText = currentText == ''
               ? ''
-              : await translateText(currentText, 'ko')
+              : await translateText(currentText, target)
                   .onError((error, stackTrace) => ''); // onerror하는 이유: 계속 에러 나서
           if (_scrollController1.hasClients && autoScroll) {
             _scrollController1.animateTo(
@@ -216,257 +226,357 @@ class _TranslationScreenState extends State<TranslationScreen> {
       }
     }
 
+    first() async {
+      await Provider.of<UserManage>(context, listen: false).fetchAndSetUser();
+      await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
+    }
+
     return FutureBuilder(
-        future: Provider.of<ApiManage>(context, listen: false).fetchAndSetApi(),
+        future: first(),
         builder: (context, futureSnapshot) {
-          return Center(
-            child: Column(
-              children: [
-                Container(
-                  height: MediaQuery.of(context).size.width / 360 * 70,
-                  padding: EdgeInsets.all(
-                      MediaQuery.of(context).size.width / 360 * 16),
-                  child: Text(
-                    textAlign: TextAlign.start,
-                    '한국어:',
-                    style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width / 360 * 20.0),
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController1,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: Text(translatedText),
+          if (Provider.of<UserManage>(context, listen: false).items.isEmpty) {
+            return Center();
+          } else {
+            String selectedOriginalLanguageCode =
+                Provider.of<UserManage>(context, listen: false)
+                    .items[0]
+                    .originalLanguage;
+            String selectedTargetLanguageCode =
+                Provider.of<UserManage>(context, listen: false)
+                    .items[0]
+                    .targetLanguage;
+            return Center(
+              child: Column(
+                children: [
+                  Container(
+                    height: MediaQuery.of(context).size.width / 360 * 70,
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.width / 360 * 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        DropdownButton(
+                          value: selectedTargetLanguageCode,
+                          items: LanguageList()
+                              .translatedLanguageCodeList
+                              .map((String code) {
+                            return DropdownMenuItem<String>(
+                              child: Text(
+                                  '${LanguageList().translatedLanguageText(code)}'),
+                              value: code,
+                            );
+                          }).toList(),
+                          onChanged: (dynamic value) {
+                            print(value);
+                            print(
+                                Provider.of<UserManage>(context, listen: false)
+                                    .items[0]
+                                    .targetLanguage);
+
+                            Provider.of<UserManage>(context, listen: false)
+                                .changeTranslatedLanguage(
+                              Provider.of<UserManage>(context, listen: false)
+                                  .items[0],
+                              value,
+                            );
+                            Provider.of<UserManage>(context, listen: false)
+                                .fetchAndSetUser();
+                            setState(() {});
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Container(
-                  height: MediaQuery.of(context).size.width / 360 * 70,
-                  padding: EdgeInsets.all(
-                      MediaQuery.of(context).size.width / 360 * 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'English:',
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                            fontSize:
-                                MediaQuery.of(context).size.width / 360 * 20.0),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController1,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Text(translatedText),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            style: TextButton.styleFrom(
-                                backgroundColor: Colors.lightBlue[100]),
-                            onPressed: () {
-                              setState(() {
-                                autoScroll = !autoScroll;
-                              });
-                            },
-                            child: Text(
-                              autoScroll
-                                  ? 'auto-scroll-mode'
-                                  : 'non-auto-scroll-mode',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
-                          IconButton(
+                    ),
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.width / 360 * 70,
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.width / 360 * 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DropdownButton(
+                          value: selectedOriginalLanguageCode,
+                          items: LanguageList()
+                              .originalLanguageCodeList
+                              .map((String code) {
+                            return DropdownMenuItem<String>(
+                              child: Text(
+                                  '${LanguageList().originalLanguageText(code)}'),
+                              value: code,
+                            );
+                          }).toList(),
+                          onChanged: (dynamic value) {
+                            print(value);
+                            print(
+                                Provider.of<UserManage>(context, listen: false)
+                                    .items[0]
+                                    .originalLanguage);
+
+                            Provider.of<UserManage>(context, listen: false)
+                                .changeOriginalLanguage(
+                              Provider.of<UserManage>(context, listen: false)
+                                  .items[0],
+                              value,
+                            );
+                            Provider.of<UserManage>(context, listen: false)
+                                .fetchAndSetUser();
+                            setState(() {});
+                          },
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                  backgroundColor: Colors.amber[100]),
                               onPressed: () {
-                                {
-                                  showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return AlertDialog(
-                                          content: SingleChildScrollView(
-                                            child: Column(children: [
-                                              text == ''
-                                                  ? Text('번역된 글자가 없습니다.')
-                                                  : (Text('기록 저장이 완료되었습니다.'))
-                                            ]),
-                                          ),
-                                        );
-                                      });
-                                }
-                                stopRecording();
-                                text == ''
-                                    ? null
-                                    : Provider.of<HistoryManage>(context,
-                                            listen: false)
-                                        .addHistory(
-                                            'record', text, translatedText);
-                                text == '' ? null : widget.selectPage!(1);
-                                text == ''
-                                    ? null
-                                    : setState(() {
-                                        pageIndex = 1;
-                                      });
+                                setState(() {
+                                  autoScroll = !autoScroll;
+                                });
                               },
-                              icon: Icon(Icons.save)),
-                          IconButton(
-                              onPressed: (Provider.of<ApiManage>(context,
-                                          listen: false)
-                                      .items
-                                      .isEmpty
-                                  ? () async {
-                                      final serviceStatus =
-                                          await Permission.microphone.isGranted;
+                              child: Text(
+                                autoScroll
+                                    ? 'auto-scroll-mode'
+                                    : 'non-auto-scroll-mode',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                            IconButton(
+                                onPressed: () {
+                                  {
+                                    showDialog(
+                                        context: context,
+                                        builder: (_) {
+                                          return AlertDialog(
+                                            content: SingleChildScrollView(
+                                              child: Column(children: [
+                                                text == ''
+                                                    ? Text('번역된 글자가 없습니다.')
+                                                    : (Text('기록 저장이 완료되었습니다.'))
+                                              ]),
+                                            ),
+                                          );
+                                        });
+                                  }
+                                  stopRecording();
+                                  text == ''
+                                      ? null
+                                      : Provider.of<HistoryManage>(context,
+                                              listen: false)
+                                          .addHistory(
+                                              'record', text, translatedText);
+                                  text == '' ? null : widget.selectPage!(1);
+                                  text == ''
+                                      ? null
+                                      : setState(() {
+                                          pageIndex = 1;
+                                        });
+                                },
+                                icon: Icon(Icons.save)),
+                            IconButton(
+                                onPressed: (Provider.of<ApiManage>(context,
+                                            listen: false)
+                                        .items
+                                        .isEmpty
+                                    ? () async {
+                                        final serviceStatus = await Permission
+                                            .microphone.isGranted;
 
-                                      bool isMicrophoneOn = serviceStatus ==
-                                          ServiceStatus.enabled;
+                                        bool isMicrophoneOn = serviceStatus ==
+                                            ServiceStatus.enabled;
 
-                                      final status =
-                                          await Permission.microphone.request();
+                                        final status = await Permission
+                                            .microphone
+                                            .request();
 
-                                      if (status == PermissionStatus.granted) {
-                                        Provider.of<ApiManage>(context,
-                                                listen: false)
-                                            .fetchAndSetApi();
-                                        showDialog(
-                                            context: context,
-                                            builder: (_) {
-                                              return AlertDialog(
-                                                content: SingleChildScrollView(
-                                                  child: Column(children: [
-                                                    (Text('설정을 먼저 진행해주세요.'))
-                                                  ]),
-                                                ),
-                                              );
-                                            });
-                                      } else if (status ==
-                                          PermissionStatus.denied) {
-                                      } else if (status ==
-                                          PermissionStatus.permanentlyDenied) {
-                                        await openAppSettings();
+                                        if (status ==
+                                            PermissionStatus.granted) {
+                                          Provider.of<ApiManage>(context,
+                                                  listen: false)
+                                              .fetchAndSetApi();
+
+                                          showDialog(
+                                              context: context,
+                                              builder: (_) {
+                                                return AlertDialog(
+                                                  content:
+                                                      SingleChildScrollView(
+                                                    child: Column(children: [
+                                                      (Text('설정을 먼저 진행해주세요.'))
+                                                    ]),
+                                                  ),
+                                                );
+                                              });
+                                        } else if (status ==
+                                            PermissionStatus.denied) {
+                                        } else if (status ==
+                                            PermissionStatus
+                                                .permanentlyDenied) {
+                                          await openAppSettings();
+                                        }
                                       }
-                                    }
-                                  : (recognizing
-                                      ? (Provider.of<ApiManage>(context,
-                                                  listen: false)
-                                              .items
-                                              .isEmpty
-                                          ? null
-                                          : () async {
-                                              final serviceStatus =
-                                                  await Permission
-                                                      .microphone.isGranted;
+                                    : (recognizing
+                                        ? (Provider.of<ApiManage>(context,
+                                                    listen: false)
+                                                .items
+                                                .isEmpty
+                                            ? null
+                                            : () async {
+                                                final serviceStatus =
+                                                    await Permission
+                                                        .microphone.isGranted;
 
-                                              bool isMicrophoneOn = serviceStatus ==
-                                                  ServiceStatus.enabled;
+                                                bool isMicrophoneOn =
+                                                    serviceStatus ==
+                                                        ServiceStatus.enabled;
 
-                                              final status = await Permission
-                                                  .microphone
-                                                  .request();
+                                                final status = await Permission
+                                                    .microphone
+                                                    .request();
 
-                                              if (status ==
-                                                  PermissionStatus.granted) {
-                                                Provider.of<ApiManage>(context,
-                                                        listen: false)
-                                                    .fetchAndSetApi();
+                                                if (status ==
+                                                    PermissionStatus.granted) {
+                                                  Provider.of<ApiManage>(
+                                                          context,
+                                                          listen: false)
+                                                      .fetchAndSetApi();
 
-                                                stopRecording();
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (_) {
-                                                      return AlertDialog(
-                                                        content:
-                                                            SingleChildScrollView(
-                                                          child: Column(
-                                                              children: [
-                                                                (Text(
-                                                                    '녹음이 정지되었습니다.'))
-                                                              ]),
-                                                        ),
-                                                      );
-                                                    });
-                                              } else if (status ==
-                                                  PermissionStatus.denied) {
-                                              } else if (status ==
-                                                  PermissionStatus
-                                                      .permanentlyDenied) {
-                                                await openAppSettings();
-                                              }
-                                            })
-                                      : (Provider.of<ApiManage>(context,
-                                                  listen: false)
-                                              .items
-                                              .isEmpty
-                                          ? null
-                                          : () async {
-                                              final serviceStatus =
-                                                  await Permission
-                                                      .microphone.isGranted;
-
-                                              bool isMicrophoneOn = serviceStatus ==
-                                                  ServiceStatus.enabled;
-
-                                              final status = await Permission
-                                                  .microphone
-                                                  .request();
-
-                                              if (status ==
-                                                  PermissionStatus.granted) {
-                                                Provider.of<ApiManage>(context,
-                                                        listen: false)
-                                                    .fetchAndSetApi();
-                                                streamingRecognize();
-                                                showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (_) {
-                                                      Future.delayed(
-                                                          Duration(seconds: 1),
-                                                          () {
-                                                        Navigator.pop(context);
-                                                      });
-                                                      return WillPopScope(
-                                                        onWillPop: () =>
-                                                            Future.value(false),
-                                                        child: AlertDialog(
+                                                  stopRecording();
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (_) {
+                                                        return AlertDialog(
                                                           content:
                                                               SingleChildScrollView(
                                                             child: Column(
                                                                 children: [
                                                                   (Text(
-                                                                      '녹음 중.'))
+                                                                      '녹음이 정지되었습니다.'))
                                                                 ]),
                                                           ),
-                                                        ),
-                                                      );
-                                                    });
-                                              } else if (status ==
-                                                  PermissionStatus.denied) {
-                                              } else if (status ==
-                                                  PermissionStatus
-                                                      .permanentlyDenied) {
-                                                await openAppSettings();
-                                              }
-                                            }))),
-                              icon:
-                                  Icon(recognizing ? Icons.mic_off : Icons.mic))
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController2,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: Text(text),
+                                                        );
+                                                      });
+                                                } else if (status ==
+                                                    PermissionStatus.denied) {
+                                                } else if (status ==
+                                                    PermissionStatus
+                                                        .permanentlyDenied) {
+                                                  await openAppSettings();
+                                                }
+                                              })
+                                        : (Provider.of<ApiManage>(context,
+                                                    listen: false)
+                                                .items
+                                                .isEmpty
+                                            ? null
+                                            : () async {
+                                                final serviceStatus =
+                                                    await Permission
+                                                        .microphone.isGranted;
+
+                                                bool isMicrophoneOn =
+                                                    serviceStatus ==
+                                                        ServiceStatus.enabled;
+
+                                                final status = await Permission
+                                                    .microphone
+                                                    .request();
+
+                                                if (status ==
+                                                    PermissionStatus.granted) {
+                                                  await Provider.of<UserManage>(
+                                                          context,
+                                                          listen: false)
+                                                      .fetchAndSetUser();
+                                                  Provider.of<ApiManage>(
+                                                          context,
+                                                          listen: false)
+                                                      .fetchAndSetApi();
+                                                  var originalLanguage =
+                                                      Provider.of<UserManage>(
+                                                              context,
+                                                              listen: false)
+                                                          .items[0]
+                                                          .originalLanguage;
+                                                  var targetLanguage =
+                                                      Provider.of<UserManage>(
+                                                              context,
+                                                              listen: false)
+                                                          .items[0]
+                                                          .targetLanguage;
+                                                  streamingRecognize(
+                                                      originalLanguage,
+                                                      targetLanguage); //첫번째: stt, 두번쨰 번역
+
+//https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages?hl=ko
+
+                                                  //https://cloud.google.com/translate/docs/languages?hl=ko
+                                                  showDialog(
+                                                      context: context,
+                                                      barrierDismissible: false,
+                                                      builder: (_) {
+                                                        Future.delayed(
+                                                            Duration(
+                                                                seconds: 1),
+                                                            () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        });
+                                                        return WillPopScope(
+                                                          onWillPop: () =>
+                                                              Future.value(
+                                                                  false),
+                                                          child: AlertDialog(
+                                                            content:
+                                                                SingleChildScrollView(
+                                                              child: Column(
+                                                                  children: [
+                                                                    (Text(
+                                                                        '녹음 중.'))
+                                                                  ]),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      });
+                                                } else if (status ==
+                                                    PermissionStatus.denied) {
+                                                } else if (status ==
+                                                    PermissionStatus
+                                                        .permanentlyDenied) {
+                                                  await openAppSettings();
+                                                }
+                                              }))),
+                                icon: Icon(
+                                    recognizing ? Icons.mic_off : Icons.mic))
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController2,
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Text(text),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
         });
   }
 }

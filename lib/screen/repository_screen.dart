@@ -27,9 +27,8 @@ class RepositoryScreen extends StatelessWidget {
                 ],
               )),
               builder: (ctx, greatHistories, ch) {
-            var sortedItems =    greatHistories.items.reversed.toList();
+                var sortedItems = greatHistories.items.reversed.toList();
                 return ListView.builder(
-               
                   shrinkWrap: true,
                   itemCount: sortedItems.length,
                   itemBuilder: (ctx, i) => Card(
@@ -57,8 +56,8 @@ class RepositoryScreen extends StatelessWidget {
                               'history_text': sortedItems[i].text,
                               'history_translatedText':
                                   sortedItems[i].translatedText,
-                              'history_createdAt':
-                                  sortedItems[i].createdAt,
+                              'history_createdAt': sortedItems[i].createdAt,
+                            
                             }),
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>

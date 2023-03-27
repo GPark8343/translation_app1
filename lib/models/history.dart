@@ -6,6 +6,7 @@ class History {
   final String text;
   final String translatedText;
   final String createdAt;
+ 
 
   History({
     required this.id,
@@ -13,6 +14,7 @@ class History {
     required this.text,
     required this.translatedText,
     required this.createdAt,
+  
   });
 
   History copyWith({
@@ -21,13 +23,15 @@ class History {
     String? text,
     String? translatedText,
     String? createdAt,
+ 
   }) {
     return History(
       id: id ?? this.id,
       title: title ?? this.title,
       text: text ?? this.text,
-     translatedText: translatedText ?? this.translatedText,
+      translatedText: translatedText ?? this.translatedText,
       createdAt: createdAt ?? this.createdAt,
+
     );
   }
 
@@ -38,7 +42,7 @@ class History {
       'text': text,
       'translatedText': translatedText,
       'created_at': createdAt,
+   
     };
   }
-
 }

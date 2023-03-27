@@ -21,18 +21,19 @@ class HistoryManage extends ChangeNotifier {
               text: 'text',
               translatedText: 'translatedText',
               createdAt: 'createdAt',
+     
             ));
   }
 
   Future<void> addHistory(String pickedTitle, String pickedtext,
       String pickedTranslatedText) async {
     final newHistory = History(
-      id: Uuid().v1(),
-      title: pickedTitle,
-      text: pickedtext,
-      translatedText: pickedTranslatedText,
-      createdAt: DateTime.now().toString(),
-    );
+        id: Uuid().v1(),
+        title: pickedTitle,
+        text: pickedtext,
+        translatedText: pickedTranslatedText,
+        createdAt: DateTime.now().toString(),
+       );
     _items.add(newHistory);
     notifyListeners();
     DBHelper.insertHistory('history', {
@@ -41,6 +42,7 @@ class HistoryManage extends ChangeNotifier {
       'text': newHistory.text,
       'translatedText': newHistory.translatedText,
       'created_at': newHistory.createdAt,
+     
     });
   }
 
@@ -53,6 +55,7 @@ class HistoryManage extends ChangeNotifier {
               text: item['text'],
               translatedText: item['translatedText'],
               createdAt: item['created_at'],
+             
             ))
         .toList();
 
@@ -63,6 +66,10 @@ class HistoryManage extends ChangeNotifier {
     History updatedHistory = findedHistory.copyWith(title: pickedTitle);
     DBHelper.updateHistory('history', updatedHistory);
   }
+
+
+
+ 
 
   Future<void> deleteHistories(String id) async {
     DBHelper.deleteHistory('history', id);

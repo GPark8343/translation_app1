@@ -1,4 +1,3 @@
-
 import 'package:sqflite/sqflite.dart' as sql;
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqlite_api.dart';
@@ -16,7 +15,8 @@ class DBHelper {
     }, version: 1);
   }
 
-  static Future<void> insertHistory(String table, Map<String, Object> data) async {
+  static Future<void> insertHistory(
+      String table, Map<String, Object> data) async {
     final db = await DBHelper.historyDatabase();
     db.insert(table, data, conflictAlgorithm: sql.ConflictAlgorithm.replace);
   }
@@ -26,17 +26,15 @@ class DBHelper {
     return db.query(table);
   }
 
- static Future updateHistory(String table, History history) async {
-  final db = await DBHelper.historyDatabase();
-  await db.update(
-    table,  // table name
-    history.toMap()
-    ,  // update post row data
-    where: 'id = ?',
-    whereArgs: [history.id],
-  );
-}
-
+  static Future updateHistory(String table, History history) async {
+    final db = await DBHelper.historyDatabase();
+    await db.update(
+      table, // table name
+      history.toMap(), // update post row data
+      where: 'id = ?',
+      whereArgs: [history.id],
+    );
+  }
 
   static Future deleteHistory(String table, String id) async {
     final db = await DBHelper.historyDatabase();
@@ -47,8 +45,7 @@ class DBHelper {
     );
   }
 
-
-static Future<Database> apiDatabase() async {
+  static Future<Database> apiDatabase() async {
     final dbPath = await sql.getDatabasesPath();
     return sql.openDatabase(path.join(dbPath, 'Api.db'),
         onCreate: (db, version) {
@@ -67,17 +64,15 @@ static Future<Database> apiDatabase() async {
     return db.query(table);
   }
 
- static Future updateApi(String table, Api api) async {
-  final db = await DBHelper.apiDatabase();
-  await db.update(
-    table,  // table name
-    api.toMap()
-    ,  // update post row data
-    where: 'id = ?',
-    whereArgs: [api.id],
-  );
-}
-
+  static Future updateApi(String table, Api api) async {
+    final db = await DBHelper.apiDatabase();
+    await db.update(
+      table, // table name
+      api.toMap(), // update post row data
+      where: 'id = ?',
+      whereArgs: [api.id],
+    );
+  }
 
   static Future deleteApi(String table, String id) async {
     final db = await DBHelper.apiDatabase();
@@ -88,16 +83,12 @@ static Future<Database> apiDatabase() async {
     );
   }
 
-
-
-
-
-static Future<Database> userDatabase() async {
+  static Future<Database> userDatabase() async {
     final dbPath = await sql.getDatabasesPath();
     return sql.openDatabase(path.join(dbPath, 'User.db'),
         onCreate: (db, version) {
       return db.execute(
-          'CREATE TABLE User(id TEXT PRIMARY KEY, first TEXT, created_at TEXT)');
+          'CREATE TABLE User(id TEXT PRIMARY KEY, first TEXT, created_at TEXT, originalLanguage TEXT, targetLanguage TEXT)');
     }, version: 1);
   }
 
@@ -111,17 +102,15 @@ static Future<Database> userDatabase() async {
     return db.query(table);
   }
 
- static Future updateUser(String table, User user) async {
-  final db = await DBHelper.userDatabase();
-  await db.update(
-    table,  // table name
-    user.toMap()
-    ,  // update post row data
-    where: 'id = ?',
-    whereArgs: [user.id],
-  );
-}
-
+  static Future updateUser(String table, User user) async {
+    final db = await DBHelper.userDatabase();
+    await db.update(
+      table, // table name
+      user.toMap(), // update post row data
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+  }
 
   static Future deleteUser(String table, String id) async {
     final db = await DBHelper.userDatabase();
@@ -131,5 +120,4 @@ static Future<Database> userDatabase() async {
       whereArgs: [id],
     );
   }
-
 }

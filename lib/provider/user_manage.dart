@@ -17,6 +17,8 @@ class UserManage extends ChangeNotifier {
               id: 'no_found',
               first: 'false',
               createdAt: 'createdAt',
+              originalLanguage: 'originalLanguage',
+              targetLanguage: 'targetLanguage',
             ));
   }
 
@@ -25,6 +27,8 @@ class UserManage extends ChangeNotifier {
       id: Uuid().v1(),
       first: 'true',
       createdAt: DateTime.now().toString(),
+      originalLanguage: 'en-US',
+      targetLanguage: 'ko',
     );
     _items.add(newUser);
     notifyListeners();
@@ -32,6 +36,8 @@ class UserManage extends ChangeNotifier {
       'id': newUser.id,
       'first': newUser.first,
       'created_at': newUser.createdAt,
+      'originalLanguage': newUser.originalLanguage,
+      'targetLanguage': newUser.targetLanguage,
     });
   }
 
@@ -42,10 +48,24 @@ class UserManage extends ChangeNotifier {
               id: item['id'],
               first: item['first'],
               createdAt: item['created_at'],
+              originalLanguage: item['originalLanguage'],
+              targetLanguage: item['targetLanguage'],
             ))
         .toList();
 
     notifyListeners();
+  }
+
+  changeOriginalLanguage(User user, String pickedOriginalLanguage) {
+    User updatedUser = user.copyWith(
+      originalLanguage: pickedOriginalLanguage,
+    );
+    DBHelper.updateUser('User', updatedUser);
+  }
+
+  changeTranslatedLanguage(User user, String pickedTargetLanguage) {
+    User updatedUser = user.copyWith(targetLanguage: pickedTargetLanguage);
+    DBHelper.updateUser('User', updatedUser);
   }
 
   Future<void> deleteUser(String id) async {
