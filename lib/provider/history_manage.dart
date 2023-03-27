@@ -16,24 +16,30 @@ class HistoryManage extends ChangeNotifier {
   History findById(String id) {
     return _items.firstWhere((History) => History.id == id,
         orElse: () => History(
-              id: 'no_found',
-              title: 'title',
-              text: 'text',
-              translatedText: 'translatedText',
-              createdAt: 'createdAt',
-     
-            ));
+            id: 'no_found',
+            title: 'title',
+            text: 'text',
+            translatedText: 'translatedText',
+            createdAt: 'createdAt',
+            originalLanguage: 'originalLanguage',
+            translatedLanguage: 'translatedLanguage'));
   }
 
-  Future<void> addHistory(String pickedTitle, String pickedtext,
-      String pickedTranslatedText) async {
+  Future<void> addHistory(
+      String pickedTitle,
+      String pickedtext,
+      String pickedTranslatedText,
+      String pickedOriginalLanguage,
+      String pickedtranslatedLanguage) async {
     final newHistory = History(
-        id: Uuid().v1(),
-        title: pickedTitle,
-        text: pickedtext,
-        translatedText: pickedTranslatedText,
-        createdAt: DateTime.now().toString(),
-       );
+      id: Uuid().v1(),
+      title: pickedTitle,
+      text: pickedtext,
+      translatedText: pickedTranslatedText,
+      createdAt: DateTime.now().toString(),
+      originalLanguage: pickedOriginalLanguage,
+      translatedLanguage: pickedtranslatedLanguage,
+    );
     _items.add(newHistory);
     notifyListeners();
     DBHelper.insertHistory('history', {
@@ -42,7 +48,8 @@ class HistoryManage extends ChangeNotifier {
       'text': newHistory.text,
       'translatedText': newHistory.translatedText,
       'created_at': newHistory.createdAt,
-     
+      'originalLanguage': newHistory.originalLanguage,
+      'translatedLanguage': newHistory.translatedLanguage,
     });
   }
 
@@ -55,7 +62,8 @@ class HistoryManage extends ChangeNotifier {
               text: item['text'],
               translatedText: item['translatedText'],
               createdAt: item['created_at'],
-             
+              originalLanguage: item['originalLanguage'],
+              translatedLanguage: item['translatedLanguage'],
             ))
         .toList();
 
@@ -66,10 +74,6 @@ class HistoryManage extends ChangeNotifier {
     History updatedHistory = findedHistory.copyWith(title: pickedTitle);
     DBHelper.updateHistory('history', updatedHistory);
   }
-
-
-
- 
 
   Future<void> deleteHistories(String id) async {
     DBHelper.deleteHistory('history', id);

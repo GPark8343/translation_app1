@@ -11,7 +11,7 @@ class DBHelper {
     return sql.openDatabase(path.join(dbPath, 'history.db'),
         onCreate: (db, version) {
       return db.execute(
-          'CREATE TABLE history(id TEXT PRIMARY KEY, title TEXT, text TEXT, translatedText TEXT, created_at TEXT)');
+          'CREATE TABLE history(id TEXT PRIMARY KEY, title TEXT, text TEXT, translatedText TEXT, created_at TEXT, originalLanguage TEXT, translatedLanguage TEXT)');
     }, version: 1);
   }
 

@@ -57,7 +57,10 @@ class RepositoryScreen extends StatelessWidget {
                               'history_translatedText':
                                   sortedItems[i].translatedText,
                               'history_createdAt': sortedItems[i].createdAt,
-                            
+                              'history_originalLanguage':
+                                  sortedItems[i].originalLanguage,
+                              'history_translatedLanguage':
+                                  sortedItems[i].translatedLanguage,
                             }),
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>

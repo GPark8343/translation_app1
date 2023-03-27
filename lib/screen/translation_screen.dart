@@ -124,6 +124,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
       widget.changeVisible!(false);
 
       Future.delayed(const Duration(seconds: 300), () async {
+        //300초 후에 다시 시작
         if (this.mounted) {
           widget.setState!();
           setState(() {});
@@ -255,35 +256,48 @@ class _TranslationScreenState extends State<TranslationScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        DropdownButton(
-                          value: selectedTargetLanguageCode,
-                          items: LanguageList()
-                              .translatedLanguageCodeList
-                              .map((String code) {
-                            return DropdownMenuItem<String>(
-                              child: Text(
-                                  '${LanguageList().translatedLanguageText(code)}'),
-                              value: code,
-                            );
-                          }).toList(),
-                          onChanged: (dynamic value) {
-                            print(value);
-                            print(
-                                Provider.of<UserManage>(context, listen: false)
-                                    .items[0]
-                                    .targetLanguage);
+                        recognizing
+                            ? Text(
+                                textAlign: TextAlign.start,
+                                '${LanguageList().translatedLanguageText(selectedTargetLanguageCode)}',
+                                style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width /
+                                            360 *
+                                            20.0),
+                              )
+                            : DropdownButton(
+                                value: selectedTargetLanguageCode,
+                                items: LanguageList()
+                                    .translatedLanguageCodeList
+                                    .map((String code) {
+                                  return DropdownMenuItem<String>(
+                                    child: Text(
+                                        '${LanguageList().translatedLanguageText(code)}'),
+                                    value: code,
+                                  );
+                                }).toList(),
+                                onChanged: (dynamic value) {
+                                  print(value);
+                                  print(Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .items[0]
+                                      .targetLanguage);
 
-                            Provider.of<UserManage>(context, listen: false)
-                                .changeTranslatedLanguage(
-                              Provider.of<UserManage>(context, listen: false)
-                                  .items[0],
-                              value,
-                            );
-                            Provider.of<UserManage>(context, listen: false)
-                                .fetchAndSetUser();
-                            setState(() {});
-                          },
-                        ),
+                                  Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .changeTranslatedLanguage(
+                                    Provider.of<UserManage>(context,
+                                            listen: false)
+                                        .items[0],
+                                    value,
+                                  );
+                                  Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .fetchAndSetUser();
+                                  setState(() {});
+                                },
+                              ),
                       ],
                     ),
                   ),
@@ -304,35 +318,48 @@ class _TranslationScreenState extends State<TranslationScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        DropdownButton(
-                          value: selectedOriginalLanguageCode,
-                          items: LanguageList()
-                              .originalLanguageCodeList
-                              .map((String code) {
-                            return DropdownMenuItem<String>(
-                              child: Text(
-                                  '${LanguageList().originalLanguageText(code)}'),
-                              value: code,
-                            );
-                          }).toList(),
-                          onChanged: (dynamic value) {
-                            print(value);
-                            print(
-                                Provider.of<UserManage>(context, listen: false)
-                                    .items[0]
-                                    .originalLanguage);
+                        recognizing
+                            ? Text(
+                                textAlign: TextAlign.start,
+                                '${LanguageList().originalLanguageText(selectedOriginalLanguageCode)}',
+                                style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width /
+                                            360 *
+                                            20.0),
+                              )
+                            : DropdownButton(
+                                value: selectedOriginalLanguageCode,
+                                items: LanguageList()
+                                    .originalLanguageCodeList
+                                    .map((String code) {
+                                  return DropdownMenuItem<String>(
+                                    child: Text(
+                                        '${LanguageList().originalLanguageText(code)}'),
+                                    value: code,
+                                  );
+                                }).toList(),
+                                onChanged: (dynamic value) {
+                                  print(value);
+                                  print(Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .items[0]
+                                      .originalLanguage);
 
-                            Provider.of<UserManage>(context, listen: false)
-                                .changeOriginalLanguage(
-                              Provider.of<UserManage>(context, listen: false)
-                                  .items[0],
-                              value,
-                            );
-                            Provider.of<UserManage>(context, listen: false)
-                                .fetchAndSetUser();
-                            setState(() {});
-                          },
-                        ),
+                                  Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .changeOriginalLanguage(
+                                    Provider.of<UserManage>(context,
+                                            listen: false)
+                                        .items[0],
+                                    value,
+                                  );
+                                  Provider.of<UserManage>(context,
+                                          listen: false)
+                                      .fetchAndSetUser();
+                                  setState(() {});
+                                },
+                              ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -374,7 +401,14 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                       : Provider.of<HistoryManage>(context,
                                               listen: false)
                                           .addHistory(
-                                              'record', text, translatedText);
+                                              'record',
+                                              text,
+                                              translatedText,
+                                              LanguageList().originalLanguageText(
+                                                  selectedOriginalLanguageCode),
+                                              LanguageList()
+                                                  .translatedLanguageText(
+                                                      selectedTargetLanguageCode));
                                   text == '' ? null : widget.selectPage!(1);
                                   text == ''
                                       ? null

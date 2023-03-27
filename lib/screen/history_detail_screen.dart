@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:translation_app/provider/api_manage.dart';
 import 'package:translation_app/provider/history_manage.dart';
 import 'package:http/http.dart' as http;
+import 'package:translation_app/data/language_list.dart';
 
 class HistoryDetailSscreen extends StatefulWidget {
   static const routeName = '/history-detail';
@@ -31,10 +32,17 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
         as Map)['history_createdAt'];
     final historyIsTranslated = (ModalRoute.of(context)?.settings.arguments
         as Map)['history_isTranslated'];
+    final historyOriginalLanguage = (ModalRoute.of(context)?.settings.arguments
+        as Map)['history_originalLanguage'];
+    final historyTranslatedLanguage = (ModalRoute.of(context)
+        ?.settings
+        .arguments as Map)['history_translatedLanguage'];
     DateTime dateTime = DateTime.parse(historyCreatedAt);
     var findedHistory =
         Provider.of<HistoryManage>(context, listen: false).findById(historyId);
 
+    print(historyOriginalLanguage);
+    print(historyTranslatedLanguage);
     return Scaffold(
         appBar: AppBar(
           title: Text('${historyTitle}'),
@@ -190,7 +198,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                   children: [
                     Text(
                       textAlign: TextAlign.start,
-                      '번역된 언어:',
+                      '${historyTranslatedLanguage}:',
                       style: TextStyle(
                           fontSize:
                               MediaQuery.of(context).size.width / 360 * 20.0),
@@ -229,7 +237,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '인식된 언어:',
+                      '${historyOriginalLanguage}:',
                       textAlign: TextAlign.start,
                       style: TextStyle(
                           fontSize:

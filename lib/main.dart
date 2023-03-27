@@ -107,11 +107,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     );
                   });
-
+              String selectedOriginalLanguageCode =
+                  Provider.of<UserManage>(context, listen: false)
+                      .items[0]
+                      .originalLanguage;
+              String selectedTargetLanguageCode =
+                  Provider.of<UserManage>(context, listen: false)
+                      .items[0]
+                      .targetLanguage;
               text == ''
                   ? null
                   : await Provider.of<HistoryManage>(context, listen: false)
-                      .addHistory('record', text, translatedText);
+                      .addHistory(
+                          'record',
+                          text,
+                          translatedText,
+                          LanguageList().originalLanguageText(
+                              selectedOriginalLanguageCode),
+                          LanguageList().translatedLanguageText(
+                              selectedTargetLanguageCode));
               await stopRecording;
             },
             pageIndex: _selectedPageIndex,
@@ -271,6 +285,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.of(context).pop();
                           Provider.of<UserManage>(context, listen: false)
                               .addUser();
+                          Provider.of<UserManage>(context, listen: false)
+                              .fetchAndSetUser();
+                              setState(() {
+                                
+                              });
                         },
                         child: const Text('동의합니다'),
                       ),
@@ -297,7 +316,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     .targetLanguage;
             print(Provider.of<UserManage>(context, listen: false).items);
             return Scaffold(
-             
               appBar: AppBar(
                   actions: [
                     IconButton(
