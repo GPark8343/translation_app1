@@ -41,7 +41,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
   final RecorderStream _recorder = RecorderStream();
   final ScrollController _scrollController1 = ScrollController();
   final ScrollController _scrollController2 = ScrollController();
-  List<Uint8List> _micChunks = [];
+ 
 
   int pageIndex = 0;
   bool recognizing = false;
@@ -154,7 +154,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
       _audioStream = BehaviorSubject<List<int>>();
       _audioStreamSubscription = _recorder.audioStream.listen((event) {
         _audioStream!.add(event);
-        _micChunks.add(event);
+      
       });
 
       await _recorder.start();
