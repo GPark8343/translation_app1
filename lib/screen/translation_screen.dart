@@ -254,13 +254,14 @@ class _TranslationScreenState extends State<TranslationScreen> {
                     padding: EdgeInsets.all(
                         MediaQuery.of(context).size.width / 360 * 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         recognizing
                             ? Text(
                                 textAlign: TextAlign.start,
                                 '${LanguageList().translatedLanguageText(selectedTargetLanguageCode)}',
                                 style: TextStyle(
+                                    fontWeight: FontWeight.bold,
                                     fontSize:
                                         MediaQuery.of(context).size.width /
                                             360 *
@@ -273,6 +274,13 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                     .map((String code) {
                                   return DropdownMenuItem<String>(
                                     child: Text(
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                360 *
+                                                20.0),
                                         '${LanguageList().translatedLanguageText(code)}'),
                                     value: code,
                                   );
@@ -298,6 +306,21 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                   setState(() {});
                                 },
                               ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                              backgroundColor: Colors.amber[100]),
+                          onPressed: () {
+                            setState(() {
+                              autoScroll = !autoScroll;
+                            });
+                          },
+                          child: Text(
+                            autoScroll
+                                ? 'auto-scroll-mode'
+                                : 'non-auto-scroll-mode',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -323,6 +346,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                 textAlign: TextAlign.start,
                                 '${LanguageList().originalLanguageText(selectedOriginalLanguageCode)}',
                                 style: TextStyle(
+                                    fontWeight: FontWeight.bold,
                                     fontSize:
                                         MediaQuery.of(context).size.width /
                                             360 *
@@ -335,6 +359,13 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                     .map((String code) {
                                   return DropdownMenuItem<String>(
                                     child: Text(
+                                        style: TextStyle(
+                                            fontSize: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                360 *
+                                                20.0,
+                                            fontWeight: FontWeight.bold),
                                         '${LanguageList().originalLanguageText(code)}'),
                                     value: code,
                                   );
@@ -363,21 +394,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                  backgroundColor: Colors.amber[100]),
-                              onPressed: () {
-                                setState(() {
-                                  autoScroll = !autoScroll;
-                                });
-                              },
-                              child: Text(
-                                autoScroll
-                                    ? 'auto-scroll-mode'
-                                    : 'non-auto-scroll-mode',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
                             IconButton(
                                 onPressed: () {
                                   {

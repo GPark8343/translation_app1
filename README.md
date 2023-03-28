@@ -55,3 +55,5 @@ target language와 original language 2개를 구분해서 history db에 저장(�
 
 'package:flutter/src/animation/animation_controller.dart': Failed assertion: line 821 pos 12: 'elapsedInSeconds >= 0.0': is not true.
 이거 오류 머임?
+
+setapiscreen에서 validator 설정하기

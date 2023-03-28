@@ -85,9 +85,17 @@ class _SetApiScreenState extends State<SetApiScreen> {
                     onPressed: () async {
                       if (_keyController.text.isEmpty ||
                           _jsonController.text.isEmpty) {
-                        // 빈 필드는 작성 못하게 해야 함
+                        print('빈 필드는 작성 못하게 해야 함.');
+                        return;
+                      } else if (_keyController.text.length != 39) {
+                        print('key는 총 39자여야 합니다.');
+                        return;
+                      } else if (!_jsonController.text.startsWith('{') ||
+                          !_jsonController.text.endsWith('}')) {
+                        print('json은 { 로 시작하고 } 로 끝나야 합니다.');
                         return;
                       }
+                      //showdiaog로 경고하기
                       await Provider.of<ApiManage>(context, listen: false)
                           .addApi(_keyController.text, _jsonController.text);
                       Navigator.of(context).pop();

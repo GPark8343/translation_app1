@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translation_app/provider/history_manage.dart';
 import 'package:translation_app/screen/history_detail_screen.dart';
+import 'package:intl/intl.dart';
 
 class RepositoryScreen extends StatelessWidget {
-  const RepositoryScreen({super.key});
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,16 @@ class RepositoryScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        (sortedItems[i].createdAt) as String,
+                        dateFormat.format(
+                            DateTime.parse(sortedItems[i].createdAt)) as String,
+                        style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width / 360 * 12,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Text(
+                        ('${sortedItems[i].originalLanguage} -> ${sortedItems[i].translatedLanguage}')
+                            as String,
                         style: TextStyle(
                             fontSize:
                                 MediaQuery.of(context).size.width / 360 * 12,

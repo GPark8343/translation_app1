@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:translation_app/colors.dart';
 import 'package:translation_app/provider/api_manage.dart';
 import 'package:translation_app/screen/set_api_screen.dart';
 import 'package:flutter/gestures.dart';
@@ -91,16 +92,17 @@ class SettingScreen extends StatelessWidget {
                                               title: const Text('진짜로 지우시겠습니까?'),
                                               actions: <Widget>[
                                                 ElevatedButton(
-                                                  style: ElevatedButton
-                                                      .styleFrom(),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              mainColor),
                                                   onPressed: () {
                                                     Navigator.of(context).pop();
                                                   },
                                                   child: const Text('취소하기'),
                                                 ),
                                                 ElevatedButton(
-                                                  style: ElevatedButton
-                                                      .styleFrom(),
+                                                    style: ElevatedButton.styleFrom(backgroundColor: mainColor),
                                                   onPressed: () async {
                                                     Provider.of<ApiManage>(
                                                             context,

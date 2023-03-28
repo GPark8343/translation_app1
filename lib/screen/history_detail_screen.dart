@@ -7,6 +7,7 @@ import 'package:translation_app/provider/api_manage.dart';
 import 'package:translation_app/provider/history_manage.dart';
 import 'package:http/http.dart' as http;
 import 'package:translation_app/data/language_list.dart';
+import 'package:translation_app/colors.dart';
 
 class HistoryDetailSscreen extends StatefulWidget {
   static const routeName = '/history-detail';
@@ -45,7 +46,10 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
     print(historyTranslatedLanguage);
     return Scaffold(
         appBar: AppBar(
-          title: Text('${historyTitle}'),
+          title: Text(
+            '${historyTitle}',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
           actions: [
             IconButton(
                 onPressed: () {
@@ -56,14 +60,16 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                           title: const Text('진짜로 지우시겠습니까?'),
                           actions: <Widget>[
                             ElevatedButton(
-                              style: ElevatedButton.styleFrom(),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: mainColor),
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
                               child: const Text('취소하기'),
                             ),
                             ElevatedButton(
-                              style: ElevatedButton.styleFrom(),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: mainColor),
                               onPressed: () async {
                                 Provider.of<HistoryManage>(context,
                                         listen: false)
@@ -136,11 +142,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                               actions: [
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.black),
+                                      backgroundColor: mainColor),
                                   onPressed: () async {
                                     if (_titleController.text.isEmpty) {
                                       // 빈 스토리는 작성 못하게 해야 함
@@ -186,6 +188,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                   textAlign: TextAlign.start,
                   '${dateTime.year}년 ${dateTime.month}월 ${dateTime.day}일 ${dateTime.hour}시 ${dateTime.minute}분 ${dateTime.second}초',
                   style: TextStyle(
+                      fontWeight: FontWeight.bold,
                       fontSize: MediaQuery.of(context).size.width / 360 * 20.0),
                 ),
               ),
@@ -200,6 +203,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                       textAlign: TextAlign.start,
                       '${historyTranslatedLanguage}:',
                       style: TextStyle(
+                          fontWeight: FontWeight.bold,
                           fontSize:
                               MediaQuery.of(context).size.width / 360 * 20.0),
                     ),
@@ -240,6 +244,7 @@ class _HistoryDetailSscreenState extends State<HistoryDetailSscreen> {
                       '${historyOriginalLanguage}:',
                       textAlign: TextAlign.start,
                       style: TextStyle(
+                          fontWeight: FontWeight.bold,
                           fontSize:
                               MediaQuery.of(context).size.width / 360 * 20.0),
                     ),
