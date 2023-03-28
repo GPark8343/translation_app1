@@ -318,56 +318,24 @@ class _MyHomePageState extends State<MyHomePage> {
             return Scaffold(
               appBar: AppBar(
                   actions: [
-                    IconButton(
-                      onPressed: () {
-                        Route _createRoute() {
-                          return PageRouteBuilder(
-                            settings: RouteSettings(arguments: {}),
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    InfoScreen(),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.ease;
-
-                              var tween = Tween(begin: begin, end: end)
-                                  .chain(CurveTween(curve: curve));
-
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: child,
-                              );
-                            },
-                          );
-                        }
-
-                        Navigator.of(context).push(_createRoute());
-                      },
-                      icon: Icon(Icons.help_outline_sharp),
-                    ),
-                    IconButton(
+                    Visibility(visible: _isVisible,
+                      child: IconButton(
                         onPressed: () {
                           Route _createRoute() {
                             return PageRouteBuilder(
                               settings: RouteSettings(arguments: {}),
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
-                                      SettingScreen(selectPage: (int index) {
-                                setState(() {
-                                  _selectedPageIndex = index;
-                                });
-                              }),
+                                      InfoScreen(),
                               transitionsBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 const begin = Offset(0.0, 1.0);
                                 const end = Offset.zero;
                                 const curve = Curves.ease;
-
+                    
                                 var tween = Tween(begin: begin, end: end)
                                     .chain(CurveTween(curve: curve));
-
+                    
                                 return SlideTransition(
                                   position: animation.drive(tween),
                                   child: child,
@@ -375,10 +343,46 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                             );
                           }
-
+                    
                           Navigator.of(context).push(_createRoute());
                         },
-                        icon: Icon(Icons.settings))
+                        icon: Icon(Icons.help_outline_sharp),
+                      ),
+                    ),
+                    Visibility(visible: _isVisible,
+                      child: IconButton(
+                          onPressed: () {
+                            Route _createRoute() {
+                              return PageRouteBuilder(
+                                settings: RouteSettings(arguments: {}),
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        SettingScreen(selectPage: (int index) {
+                                  setState(() {
+                                    _selectedPageIndex = index;
+                                  });
+                                }),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  const begin = Offset(0.0, 1.0);
+                                  const end = Offset.zero;
+                                  const curve = Curves.ease;
+                    
+                                  var tween = Tween(begin: begin, end: end)
+                                      .chain(CurveTween(curve: curve));
+                    
+                                  return SlideTransition(
+                                    position: animation.drive(tween),
+                                    child: child,
+                                  );
+                                },
+                              );
+                            }
+                    
+                            Navigator.of(context).push(_createRoute());
+                          },
+                          icon: Icon(Icons.settings)),
+                    )
                   ],
                   title: Text(
                     _selectedPageIndex == 0 ? '번역' : '기록 보관소',
