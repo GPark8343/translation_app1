@@ -10,6 +10,9 @@ import 'package:translation_app/provider/user_manage.dart';
 import 'package:http/http.dart' as http;
 
 class SearchScreen extends StatefulWidget {
+  final Function? selectPage;
+
+  SearchScreen({this.selectPage});
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
@@ -169,14 +172,17 @@ class _SearchScreenState extends State<SearchScreen> {
                                               child: Column(children: [
                                                 _textController.text == ''
                                                     ? Text('번역될 글자가 없습니다.')
-                                                    : (Text('저장이 완료되었습니다.'))
+                                                    : translatedText == ''
+                                                        ? Text('번역을 하지 않았습니다.')
+                                                        : (Text('저장이 완료되었습니다.'))
                                               ]),
                                             ),
                                           );
                                         });
                                   }
 
-                                  _textController.text == ''
+                                  (_textController.text == '' ||
+                                          translatedText == '')
                                       ? null
                                       : Provider.of<HistoryManage>(context,
                                               listen: false)
@@ -189,6 +195,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                               LanguageList()
                                                   .translatedLanguageText(
                                                       selectedTargetLanguageCode));
+                                  (_textController.text == '' ||
+                                          translatedText == '')
+                                      ? null
+                                      : widget.selectPage!(1);
                                   // _textController.text == '' ? null : widget.selectPage!(1);
                                   // text == ''
                                   //     ? null

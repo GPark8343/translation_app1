@@ -417,7 +417,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                       : Provider.of<HistoryManage>(context,
                                               listen: false)
                                           .addHistory(
-                                              'record',
+                                              'voice',
                                               text,
                                               translatedText,
                                               LanguageList().originalLanguageText(

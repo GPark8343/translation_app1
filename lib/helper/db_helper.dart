@@ -88,7 +88,7 @@ class DBHelper {
     return sql.openDatabase(path.join(dbPath, 'User.db'),
         onCreate: (db, version) {
       return db.execute(
-          'CREATE TABLE User(id TEXT PRIMARY KEY, first TEXT, created_at TEXT, originalLanguage TEXT, targetLanguage TEXT)');
+          'CREATE TABLE User(id TEXT PRIMARY KEY, first TEXT, created_at TEXT, originalLanguage TEXT, targetLanguage TEXT, isAdRemoved TEXT)');
     }, version: 1);
   }
 

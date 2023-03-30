@@ -19,6 +19,7 @@ class UserManage extends ChangeNotifier {
               createdAt: 'createdAt',
               originalLanguage: 'originalLanguage',
               targetLanguage: 'targetLanguage',
+              isAdRemoved: 'isAdRemoved',
             ));
   }
 
@@ -29,6 +30,7 @@ class UserManage extends ChangeNotifier {
       createdAt: DateTime.now().toString(),
       originalLanguage: 'en-US',
       targetLanguage: 'ko',
+      isAdRemoved: 'false',
     );
     _items.add(newUser);
     notifyListeners();
@@ -38,6 +40,7 @@ class UserManage extends ChangeNotifier {
       'created_at': newUser.createdAt,
       'originalLanguage': newUser.originalLanguage,
       'targetLanguage': newUser.targetLanguage,
+      'isAdRemoved': newUser.isAdRemoved,
     });
   }
 
@@ -50,6 +53,7 @@ class UserManage extends ChangeNotifier {
               createdAt: item['created_at'],
               originalLanguage: item['originalLanguage'],
               targetLanguage: item['targetLanguage'],
+              isAdRemoved: item['isAdRemoved'],
             ))
         .toList();
 

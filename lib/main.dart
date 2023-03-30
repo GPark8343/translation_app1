@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ? null
                   : await Provider.of<HistoryManage>(context, listen: false)
                       .addHistory(
-                          'record',
+                          'voice',
                           text,
                           translatedText,
                           LanguageList().originalLanguageText(
@@ -146,7 +146,16 @@ class _MyHomePageState extends State<MyHomePage> {
         'title': 'translation'
       },
       {'page': RepositoryScreen(), 'title': 'test'},
-      {'page': SearchScreen(), 'title': 'search'},
+      {
+        'page': SearchScreen(
+          selectPage: (int index) {
+            setState(() {
+              _selectedPageIndex = index;
+            });
+          },
+        ),
+        'title': 'search'
+      },
     ];
 
     super.initState();
@@ -170,6 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
       await Provider.of<UserManage>(context, listen: false).fetchAndSetUser();
       await Provider.of<ApiManage>(context, listen: false).fetchAndSetApi();
       print(Provider.of<UserManage>(context, listen: false).items);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Provider.of<UserManage>(context, listen: false).items.isEmpty)
           showDialog(
@@ -315,6 +325,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     .items[0]
                     .targetLanguage;
             print(Provider.of<UserManage>(context, listen: false).items);
+            print(Provider.of<UserManage>(context, listen: false)
+                .items
+                .first
+                .isAdRemoved);
             return Scaffold(
               appBar: AppBar(
                   actions: [
@@ -387,7 +401,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     )
                   ],
                   title: Text(
-                    _selectedPageIndex == 0 ? '보이스 번역' : _selectedPageIndex == 1 ?'기록 보관소':'텍스트 번역',
+                    _selectedPageIndex == 0
+                        ? '보이스 번역'
+                        : _selectedPageIndex == 1
+                            ? '기록 보관소'
+                            : '텍스트 번역',
                   )),
               body:
                   SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),

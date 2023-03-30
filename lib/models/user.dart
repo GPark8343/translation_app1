@@ -4,6 +4,7 @@ class User {
   final String createdAt;
   final String originalLanguage;
   final String targetLanguage;
+  final String isAdRemoved;
 
   User({
     required this.id,
@@ -11,6 +12,7 @@ class User {
     required this.createdAt,
     required this.originalLanguage,
     required this.targetLanguage,
+    required this.isAdRemoved,
   });
 
   User copyWith({
@@ -19,6 +21,7 @@ class User {
     String? createdAt,
     String? originalLanguage,
     String? targetLanguage,
+    String? isAdRemoved,
   }) {
     return User(
       id: id ?? this.id,
@@ -26,7 +29,7 @@ class User {
       createdAt: createdAt ?? this.createdAt,
       originalLanguage: originalLanguage ?? this.originalLanguage,
       targetLanguage: targetLanguage ?? this.targetLanguage,
-      
+      isAdRemoved: isAdRemoved ?? this.isAdRemoved,
     );
   }
 
@@ -37,6 +40,7 @@ class User {
       'created_at': createdAt,
       'originalLanguage': originalLanguage,
       'targetLanguage': targetLanguage,
+      'isAdRemoved': isAdRemoved,
     };
   }
 }
