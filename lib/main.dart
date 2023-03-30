@@ -19,6 +19,7 @@ import 'package:translation_app/provider/user_manage.dart';
 import 'package:translation_app/screen/history_detail_screen.dart';
 import 'package:translation_app/screen/info_screen.dart';
 import 'package:translation_app/screen/repository_screen.dart';
+import 'package:translation_app/screen/search_screen.dart';
 import 'package:translation_app/screen/set_api_screen.dart';
 import 'package:translation_app/screen/setting_screen.dart';
 import 'package:translation_app/screen/translation_screen.dart';
@@ -145,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
         'title': 'translation'
       },
       {'page': RepositoryScreen(), 'title': 'test'},
+      {'page': SearchScreen(), 'title': 'search'},
     ];
 
     super.initState();
@@ -287,9 +289,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               .addUser();
                           Provider.of<UserManage>(context, listen: false)
                               .fetchAndSetUser();
-                              setState(() {
-                                
-                              });
+                          setState(() {});
                         },
                         child: const Text('동의합니다'),
                       ),
@@ -318,7 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
             return Scaffold(
               appBar: AppBar(
                   actions: [
-                    Visibility(visible: _isVisible,
+                    Visibility(
+                      visible: _isVisible,
                       child: IconButton(
                         onPressed: () {
                           Route _createRoute() {
@@ -332,10 +333,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const begin = Offset(0.0, 1.0);
                                 const end = Offset.zero;
                                 const curve = Curves.ease;
-                    
+
                                 var tween = Tween(begin: begin, end: end)
                                     .chain(CurveTween(curve: curve));
-                    
+
                                 return SlideTransition(
                                   position: animation.drive(tween),
                                   child: child,
@@ -343,13 +344,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                             );
                           }
-                    
+
                           Navigator.of(context).push(_createRoute());
                         },
                         icon: Icon(Icons.help_outline_sharp),
                       ),
                     ),
-                    Visibility(visible: _isVisible,
+                    Visibility(
+                      visible: _isVisible,
                       child: IconButton(
                           onPressed: () {
                             Route _createRoute() {
@@ -367,10 +369,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   const begin = Offset(0.0, 1.0);
                                   const end = Offset.zero;
                                   const curve = Curves.ease;
-                    
+
                                   var tween = Tween(begin: begin, end: end)
                                       .chain(CurveTween(curve: curve));
-                    
+
                                   return SlideTransition(
                                     position: animation.drive(tween),
                                     child: child,
@@ -378,14 +380,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                 },
                               );
                             }
-                    
+
                             Navigator.of(context).push(_createRoute());
                           },
                           icon: Icon(Icons.settings)),
                     )
                   ],
                   title: Text(
-                    _selectedPageIndex == 0 ? '번역' : '기록 보관소',
+                    _selectedPageIndex == 0 ? '보이스 번역' : _selectedPageIndex == 1 ?'기록 보관소':'텍스트 번역',
                   )),
               body:
                   SafeArea(child: _pages[_selectedPageIndex]['page'] as Widget),
@@ -407,6 +409,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           backgroundColor: Theme.of(context).primaryColor,
                           icon: Icon(Icons.file_copy),
                           label: '기록'),
+                      BottomNavigationBarItem(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          icon: Icon(Icons.search),
+                          label: '검색'),
                     ]),
               ),
             );

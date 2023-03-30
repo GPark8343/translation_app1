@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import 'dart:async';
@@ -41,7 +39,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
   final RecorderStream _recorder = RecorderStream();
   final ScrollController _scrollController1 = ScrollController();
   final ScrollController _scrollController2 = ScrollController();
- 
 
   int pageIndex = 0;
   bool recognizing = false;
@@ -154,7 +151,6 @@ class _TranslationScreenState extends State<TranslationScreen> {
       _audioStream = BehaviorSubject<List<int>>();
       _audioStreamSubscription = _recorder.audioStream.listen((event) {
         _audioStream!.add(event);
-      
       });
 
       await _recorder.start();
