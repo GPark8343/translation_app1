@@ -41,6 +41,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
   final ScrollController _scrollController2 = ScrollController();
 
   int pageIndex = 0;
+  int count = 0;
   bool recognizing = false;
   bool recognizeFinished = false;
   bool autoScroll = true;
@@ -48,6 +49,41 @@ class _TranslationScreenState extends State<TranslationScreen> {
   String translatedText = '';
   StreamSubscription<List<int>>? _audioStreamSubscription;
   BehaviorSubject<List<int>>? _audioStream;
+
+  Timer? _timer;
+  int _timeCount = 0;
+  bool _isRunning = false;
+
+  void _start() {
+    _timer = Timer.periodic(Duration(milliseconds: 10), (timer) {
+      setState(() {
+        _timeCount++;
+      });
+    });
+  }
+
+  void _pause() {
+    _timer?.cancel();
+  }
+
+  void _timerPlay() {
+    _isRunning = !_isRunning;
+
+    if (_isRunning) {
+      _start();
+    } else {
+      _pause();
+    }
+  }
+
+  void _timerReset() {
+    setState(() {
+      _isRunning = false;
+      _timer?.cancel();
+
+      _timeCount = 0;
+    });
+  }
 
   @override
   void initState() {
@@ -95,6 +131,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
     }
 
     stopRecording() async {
+      _timerReset();
       widget.changeVisible!(true);
       await _recorder.stop();
       await _audioStreamSubscription?.cancel();
@@ -121,22 +158,24 @@ class _TranslationScreenState extends State<TranslationScreen> {
     }
 
     streamingRecognize(String original, String target) async {
+      _timerPlay();
       widget.changeVisible!(false);
 
-      Future.delayed(const Duration(seconds: 300), () async {
+      Future.delayed(const Duration(seconds: 10), () async {
         //300초 후에 다시 시작
         if (this.mounted) {
           widget.setState!();
           setState(() {});
+          count++;
         }
-
-        print(recognizing);
+        print('${count}count');
+        print('${recognizing}recognizing');
         print(widget.pageIndex);
         print(pageIndex);
-        if (pageIndex == 0 && recognizing) {
+        if (recognizing) {
           await widget.futureFunction!(text, translatedText, stopRecording());
           print(recognizing);
-          if (recognizing == false) {
+          if (recognizing == false && count < 12) {
             streamingRecognize(original, target);
           }
           //   setState(() {
@@ -321,6 +360,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                             style: TextStyle(color: Colors.black),
                           ),
                         ),
+                        Text('${(_timeCount / 100).ceil().toString()} sec')
                       ],
                     ),
                   ),
@@ -564,6 +604,9 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                                               listen: false)
                                                           .items[0]
                                                           .targetLanguage;
+                                                  setState(() {
+                                                    count = 0;
+                                                  });
                                                   streamingRecognize(
                                                       originalLanguage,
                                                       targetLanguage); //첫번째: stt, 두번쨰 번역
