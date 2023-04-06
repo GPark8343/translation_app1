@@ -25,6 +25,7 @@ import 'package:translation_app/screen/setting_screen.dart';
 import 'package:translation_app/screen/translation_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   await initializeDateFormatting();
@@ -33,6 +34,7 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  MobileAds.instance.initialize();
   runApp(MyApp());
 }
 
@@ -82,8 +84,20 @@ class _MyHomePageState extends State<MyHomePage> {
   late List<Map<String, Object>> _pages; //
   int _selectedPageIndex = 0;
   bool _isVisible = true; // BottomNavigationBar를 숨기는 상태 변수
+  late String admobBannerId;
+  BannerAd? banner;
   @override
   void initState() {
+    admobBannerId = "ca-app-pub-3940256099942544/6300978111";
+    banner = BannerAd(
+      size: AdSize.banner,
+      adUnitId: admobBannerId,
+      listener: BannerAdListener(
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {},
+        onAdLoaded: (_) {},
+      ),
+      request: AdRequest(),
+    )..load();
     _pages = [
       {
         'page': TranslationScreen(

@@ -49,6 +49,7 @@ dependencies:
   url_launcher: ^6.1.10
   permission_handler: ^10.2.0
   flutter_native_splash: ^2.2.19
+  google_mobile_ads: ^2.4.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

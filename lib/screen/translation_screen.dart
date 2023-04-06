@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
@@ -85,10 +86,44 @@ class _TranslationScreenState extends State<TranslationScreen> {
     });
   }
 
+  InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+  void onAdLoaded(InterstitialAd ad) {
+    _interstitialAd = ad;
+    _isAdLoaded = true;
+
+    _interstitialAd!.fullScreenContentCallback =
+        FullScreenContentCallback(onAdDismissedFullScreenContent: (ad) {
+      _interstitialAd?.dispose();
+    }, onAdFailedToShowFullScreenContent: (ad, error) {
+      _interstitialAd?.dispose();
+    });
+  }
+
+  void loadInterstitial() async {
+    InterstitialAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      // 'ca-app-pub-7806371932663728/1349927845',
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: onAdLoaded,
+        onAdFailedToLoad: (LoadAdError error) {
+          // nothing to do
+        },
+      ),
+    );
+  }
+
+  void showInterstitial() {
+    if (_isAdLoaded) {
+      _interstitialAd?.show();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-
+    loadInterstitial();
     _recorder.initialize();
   }
 
@@ -161,7 +196,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
       _timerPlay();
       widget.changeVisible!(false);
 
-      Future.delayed(const Duration(seconds: 10), () async {
+      Future.delayed(const Duration(seconds: 300), () async {
         //300초 후에 다시 시작
         if (this.mounted) {
           widget.setState!();
@@ -471,6 +506,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
                                       : setState(() {
                                           pageIndex = 1;
                                         });
+                                  text == '' ? null : showInterstitial();
                                 },
                                 icon: Icon(Icons.save)),
                             IconButton(

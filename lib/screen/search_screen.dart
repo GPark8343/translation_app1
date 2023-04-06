@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:translation_app/data/language_list.dart';
@@ -18,6 +19,49 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+
+InterstitialAd? _interstitialAd;
+  bool _isAdLoaded = false;
+  void onAdLoaded(InterstitialAd ad) {
+    _interstitialAd = ad;
+    _isAdLoaded = true;
+
+    _interstitialAd!.fullScreenContentCallback =
+        FullScreenContentCallback(onAdDismissedFullScreenContent: (ad) {
+      _interstitialAd?.dispose();
+    }, onAdFailedToShowFullScreenContent: (ad, error) {
+      _interstitialAd?.dispose();
+    });
+  }
+
+  void loadInterstitial() async {
+    InterstitialAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      // 'ca-app-pub-7806371932663728/1349927845',
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: onAdLoaded,
+        onAdFailedToLoad: (LoadAdError error) {
+          // nothing to do
+        },
+      ),
+    );
+  }
+
+  void showInterstitial() {
+    if (_isAdLoaded) {
+      _interstitialAd?.show();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadInterstitial();
+
+  }
+
+
   final _textController = TextEditingController();
   String translatedText = '';
   first() async {
@@ -199,6 +243,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                           translatedText == '')
                                       ? null
                                       : widget.selectPage!(1);
+                                      (_textController.text == '' ||
+                                          translatedText == '')
+                                      ? null
+                                      : showInterstitial();
                                   // _textController.text == '' ? null : widget.selectPage!(1);
                                   // text == ''
                                   //     ? null
