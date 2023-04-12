@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   BannerAd? banner;
   @override
   void initState() {
-    admobBannerId = "ca-app-pub-3940256099942544/6300978111";
+    admobBannerId = "ca-app-pub-3584953098647128/1308297298";
     banner = BannerAd(
       size: AdSize.banner,
       adUnitId: admobBannerId,

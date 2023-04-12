@@ -102,7 +102,7 @@ class _TranslationScreenState extends State<TranslationScreen> {
 
   void loadInterstitial() async {
     InterstitialAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      adUnitId: 'ca-app-pub-3584953098647128/1308297298',
       // 'ca-app-pub-7806371932663728/1349927845',
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(

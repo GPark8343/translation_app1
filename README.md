@@ -57,3 +57,6 @@ target language와 original language 2개를 구분해서 history db에 저장(�
 이거 오류 머임?
 
 setapiscreen에서 validator 설정하기
+
+
+appstore 배포 시 google mobile ads의 app id info.plist에 넣기
